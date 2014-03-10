@@ -1,0 +1,8 @@
+base_oauth20_uri=
+client_id=
+client_secret=
+apifest_uri=
+db_uri=
+redis.sentinels=
+redis.master=
+oauth20.database=
