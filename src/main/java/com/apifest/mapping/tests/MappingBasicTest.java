@@ -40,7 +40,7 @@ public class MappingBasicTest extends BasicTest {
         URIBuilder builder = null;
         String response = null;
         try {
-            builder = new URIBuilder(apifestUri + "/me");
+            builder = new URIBuilder(apifestUri + "/v0.1/me");
             GetMethod get = new GetMethod(builder.build().toString());
             if(accessToken != null) {
                 get.addRequestHeader("Authorization", "Bearer " + accessToken);
