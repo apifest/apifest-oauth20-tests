@@ -56,7 +56,7 @@ public class MappingWithAccessTokenFlowTest extends MappingBasicTest {
         // GIVEN
         OAuth20BasicTest oauth = new OAuth20BasicTest();
         String redirectUri = "http://example.com";
-        String authCode = oauth.obtainAuthCode(clientId, redirectUri, "code", "invalid");
+        String authCode = oauth.obtainAuthCode(clientId, redirectUri, "code", "friends");
         String accessTokenResponse = oauth.obtainAccessToken("authorization_code", authCode, clientId, redirectUri);
 
         // WHEN

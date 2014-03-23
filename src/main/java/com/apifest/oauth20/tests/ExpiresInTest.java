@@ -67,6 +67,7 @@ public class ExpiresInTest extends OAuth20BasicTest {
 
         // THEN
         JSONObject json = new JSONObject(response);
+        // TODO: use method to get scope expires_in
         assertEquals(json.get("expires_in"), "900");
     }
 

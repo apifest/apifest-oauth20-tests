@@ -33,7 +33,7 @@ public class ClientCredentialsTokenFlowTest extends OAuth20BasicTest {
     @Test
     public void when_valid_client_id_and_client_secret_in_Authorization_Header_issue_token() throws Exception {
         // WHEN
-        String accessToken = obtainClientCredentialsAccessToken(clientId, null, true);
+        String accessToken = obtainClientCredentialsAccessToken(clientId, DEFAULT_SCOPE, true);
 
         // THEN
         assertNotNull(accessToken);

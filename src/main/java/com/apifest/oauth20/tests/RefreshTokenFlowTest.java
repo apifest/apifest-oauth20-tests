@@ -52,7 +52,7 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
         // WHEN
         String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, redirectUri);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, null);
+        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, "basic");
         String superNewAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, "basic");
 
         // THEN

@@ -191,7 +191,7 @@ public class OAuth20BasicTest extends BasicTest {
         String response =  obtainClientCredentialsAccessTokenResponse(clientId, scope, addAuthHeader);
         log.info(response);
         if(response != null) {
-            return  extractAccessToken(response);
+            return extractAccessToken(response);
         }
         return null;
     }
@@ -297,7 +297,9 @@ public class OAuth20BasicTest extends BasicTest {
         buf.append("grant_type=" + grantType + "&");
         //buf.append("client_id=" + clientId + "&");
         buf.append("refresh_token=" + refreshToken + "&");
-        buf.append("scope=" + scope);
+        if(scope != null) {
+            buf.append("scope=" + scope);
+        }
         return buf.toString();
     }
 
