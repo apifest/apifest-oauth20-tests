@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest.oauth20.tests;
 
@@ -25,7 +25,6 @@ import org.testng.annotations.Test;
 import com.apifest.BasicTest;
 import com.apifest.TestDBFactory;
 import com.apifest.TestDBManager;
-import com.apifest.TestMongoDBManager;
 
 /**
  * Test cases for obtaining access token with auth code.
@@ -46,7 +45,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken(authCode + "_invalid", clientId, redirectUri);
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid auth_code\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
     }
 
     @Test
@@ -58,7 +57,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken(authCode, clientId + "_invalid", redirectUri);
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid client_id\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
     }
 
     @Test
@@ -72,7 +71,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken(authCode, newClientId + "_invalid", redirectUri);
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid client_id\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
     }
 
     @Test
@@ -84,11 +83,12 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken(authCode, clientId, redirectUri + "_invalid");
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid auth_code\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
     }
 
     @Test
-    public void when_auth_code_is_used_with_redirect_id_but_generation_of_token_with_no_redirect_uri_return_error() throws Exception {
+    public void when_auth_code_is_used_with_redirect_id_but_generation_of_token_with_no_redirect_uri_return_error()
+            throws Exception {
         // GIVEN
         String authCode = obtainAuthCode(clientId, redirectUri);
 
@@ -96,7 +96,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken(authCode, clientId, null + "_invalid");
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid auth_code\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
     }
 
     @Test
@@ -108,7 +108,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String accessTokenResponse = obtainAccessToken("invalid grant_type", authCode, clientId, redirectUri);
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"unsupported_grant_type\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"unsupported_grant_type\"}");
     }
 
     @Test
@@ -122,7 +122,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         // validate access token
 
         // THEN
-        assertEquals(accessTokenResponse,  "{\"error\": \"invalid auth_code\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
     }
 
     @Test

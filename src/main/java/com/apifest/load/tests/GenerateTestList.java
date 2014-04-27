@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest.load.tests;
 
@@ -41,28 +41,27 @@ public class GenerateTestList {
     private static String ls = System.getProperty("line.separator");
     public static final String TESTS_FILENAME = "tests_classes.txt";
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         getAllClasses();
         // write classes to output file
-        String resourcesDir =  "src" + fs + "main" + fs + "resources" + fs;
+        String resourcesDir = "src" + fs + "main" + fs + "resources" + fs;
         File file = new File(resourcesDir + TESTS_FILENAME);
         BufferedOutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(file));
-            for(Class<?> clazz : classes) {
+            for (Class<?> clazz : classes) {
                 out.write(clazz.getCanonicalName().getBytes());
                 out.write(ls.getBytes());
             }
             out.flush();
-            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                if(out != null) {
+                if (out != null) {
                     out.close();
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 log.error("Cannot close file");
             }
         }
@@ -79,7 +78,7 @@ public class GenerateTestList {
         }
         String rootPath = path.replace(fs + dir, "");
         rootPath = rootPath.replace("/", fs);
-        if(rootPath.startsWith(fs)){
+        if (rootPath.startsWith(fs)) {
             rootPath = rootPath.substring(1, rootPath.length());
         }
         addClasses(path, rootPath);
@@ -87,20 +86,21 @@ public class GenerateTestList {
 
     private static void addClasses(String path, String rootPath) {
         File f = new File(path);
-        File [] files = null;
-        if(f.isDirectory()) {
+        File[] files = null;
+        if (f.isDirectory()) {
             files = f.listFiles();
         }
-        if(files != null) {
-            for(File curFile : files) {
+        if (files != null) {
+            for (File curFile : files) {
                 log.debug("curFile: " + curFile);
-                if(curFile.isFile()){
+                if (curFile.isFile()) {
                     Class<?> clazz;
                     try {
                         String curFilePath = curFile.getPath().replace(rootPath + fs, "");
                         curFilePath = curFilePath.replace(fs, ".");
                         log.debug("curFilePath: " + curFilePath);
-                        String className = "com.apifest." + (new String(curFilePath)).replace(".class", "");
+                        String className = "com.apifest."
+                                + (new String(curFilePath)).replace(".class", "");
                         clazz = Class.forName(className);
                         classes.add(clazz);
                     } catch (ClassNotFoundException e) {

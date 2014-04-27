@@ -1,0 +1,224 @@
+/*
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.apifest.oauth20.tests;
+
+import static org.testng.Assert.*;
+
+import org.testng.annotations.Test;
+
+/**
+ * @author Rossitsa Borissova
+ *
+ */
+public class ScopeTest extends OAuth20BasicTest {
+
+    private static final String SCOPE_NOT_VALID = "{\"status\":\"scope not valid\"}";
+
+    @Test
+    public void when_get_auth_code_with_non_existing_scope_return_error() throws Exception {
+        // WHEN
+        String response = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, "non-existing");
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_get_auth_code_with_not_client_scope_return_error() throws Exception {
+        // GIVEN
+        String newScope = registerNewScope("newScope", "new test scope", 1800);
+
+        // WHEN
+        String response = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, newScope);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_get_auth_code_with_null_scope_use_client_default_scope() throws Exception {
+        // WHEN
+        String code = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, null);
+        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, REDIRECT_URI);
+        String scope = extractAccessTokenScope(accessTokenResponse);
+        String clientDefaultScope = getClientDefaultScope(clientId);
+
+        // THEN
+        assertEquals(scope, clientDefaultScope);
+    }
+
+    @Test
+    public void when_get_auth_code_with_valid_scope_return_auth_code() throws Exception {
+        // WHEN
+        String code = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, DEFAULT_SCOPE);
+        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, REDIRECT_URI);
+        String scope = extractAccessTokenScope(accessTokenResponse);
+
+        // THEN
+        assertEquals(scope, DEFAULT_SCOPE);
+    }
+
+    @Test
+    public void when_obtain_password_access_token_with_non_existing_scope_return_error() throws Exception {
+        // WHEN
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", "non-existing",
+                true);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_password_access_token_with_null_scope_use_client_default_scope() throws Exception {
+        // WHEN
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", null, true);
+        String scope = extractAccessTokenScope(response);
+        String clientDefaultScope = getClientDefaultScope(clientId);
+
+        // THEN
+        assertEquals(scope, clientDefaultScope);
+    }
+
+    @Test
+    public void when_obtain_password_access_token_with_not_client_scope_return_error() throws Exception {
+        // GIVEN
+        String newScope = registerNewScope("newScope", "new test scope", 1800);
+
+        // WHEN
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", newScope, true);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_password_access_token_with_valid_scope_return_access_token_with_that_scope()
+            throws Exception {
+        // GIVEN
+        String defaultScope = getClientDefaultScope(clientId);
+        String accessScope = defaultScope.split(",")[0];
+
+        // WHEN
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", accessScope,
+                true);
+        String scope = extractAccessTokenScope(response);
+
+        // THEN
+        assertEquals(scope, accessScope);
+    }
+
+    @Test
+    public void when_obtain_client_credentials_access_token_with_non_existing_scope_return_error() throws Exception {
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, "non-existing", true);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_client_credentials_access_token_with_null_scope_use_client_default_scope() throws Exception {
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, null, true);
+        String scope = extractAccessTokenScope(response);
+        String clientDefaultScope = getClientDefaultScope(clientId);
+
+        // THEN
+        assertEquals(scope, clientDefaultScope);
+    }
+
+    @Test
+    public void when_obtain_client_credentials_access_token_with_not_client_scope_return_error() throws Exception {
+        // GIVEN
+        String newScope = registerNewScope("newScope", "new test scope", 1800);
+
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_client_credentials_access_token_with_valid_scope_return_access_token_with_that_scope()
+            throws Exception {
+        // GIVEN
+        String defaultScope = getClientDefaultScope(clientId);
+        String accessScope = defaultScope.split(",")[0];
+
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, accessScope, true);
+        String scope = extractAccessTokenScope(response);
+
+        // THEN
+        assertEquals(scope, accessScope);
+    }
+
+    @Test
+    public void when_obtain_refresh_access_token_with_non_existing_scope_return_error() throws Exception {
+        // WHEN
+        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind",
+                "non-existing", true);
+        String refreshToken = extractRefreshToken(accessTokenResponse);
+        String response = obtainAccessTokenByRefreshTokenResponse(GRANT_TYPE_REFRESH_TOKEN, refreshToken, clientId,
+                "non-existing");
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_refresh_access_token_with_null_scope_use_client_default_scope() throws Exception {
+        // WHEN
+        String clientDefaultScope = getClientDefaultScope(clientId);
+        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind",
+                clientDefaultScope, true);
+        String refreshToken = extractRefreshToken(accessTokenResponse);
+        String response = obtainAccessTokenByRefreshTokenResponse(GRANT_TYPE_REFRESH_TOKEN, refreshToken, clientId,
+                null);
+        String scope = extractAccessTokenScope(response);
+
+        // THEN
+        assertEquals(scope, clientDefaultScope);
+    }
+
+    @Test
+    public void when_obtain_refresh_access_token_with_not_client_scope_return_error() throws Exception {
+        // GIVEN
+        String newScope = registerNewScope("newScope", "new test scope", 1800);
+
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
+
+        // THEN
+        assertEquals(response, SCOPE_NOT_VALID);
+    }
+
+    @Test
+    public void when_obtain_refresh_access_token_with_valid_scope_return_access_token_with_that_scope()
+            throws Exception {
+        // GIVEN
+        String defaultScope = getClientDefaultScope(clientId);
+        String accessScope = defaultScope.split(",")[0];
+
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, accessScope, true);
+        String scope = extractAccessTokenScope(response);
+
+        // THEN
+        assertEquals(scope, accessScope);
+    }
+}

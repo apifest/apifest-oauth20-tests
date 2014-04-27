@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest.mapping.tests;
 
@@ -39,7 +39,7 @@ public class MappingWithAccessTokenFlowTest extends MappingBasicTest {
         String response = getMe();
 
         // THEN
-        assertEquals(response,"{\"error\":\"access token required\"}");
+        assertEquals(response, "{\"error\":\"access token required\"}");
     }
 
     @Test
@@ -48,22 +48,24 @@ public class MappingWithAccessTokenFlowTest extends MappingBasicTest {
         String response = getMe("invalid_access_token");
 
         // THEN
-        assertEquals(response,"{\"error\":\"access token not valid\"}");
+        assertEquals(response, "{\"error\":\"access token not valid\"}");
     }
 
     @Test
-    public void when_mapping_with_valid_access_token_with_invalid_scope_return_error() throws Exception {
+    public void when_mapping_with_valid_access_token_with_invalid_scope_return_error()
+            throws Exception {
         // GIVEN
         OAuth20BasicTest oauth = new OAuth20BasicTest();
         String redirectUri = "http://example.com";
-        String authCode = oauth.obtainAuthCode(clientId, redirectUri, "code", "friends");
-        String accessTokenResponse = oauth.obtainAccessToken("authorization_code", authCode, clientId, redirectUri);
+        String authCode = oauth.obtainAuthCode(clientId, redirectUri, "code", "extended");
+        String accessTokenResponse = oauth.obtainAccessToken("authorization_code", authCode,
+                clientId, redirectUri);
 
         // WHEN
         String response = getMe(accessTokenResponse);
 
         // THEN
-        assertEquals(response,"{\"error\":\"scope not valid\"}");
+        assertEquals(response, "{\"error\":\"access token scope not valid\"}");
     }
 
     @Test

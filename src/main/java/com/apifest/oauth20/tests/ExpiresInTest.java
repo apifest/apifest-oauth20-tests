@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest.oauth20.tests;
 
@@ -36,13 +36,12 @@ public class ExpiresInTest extends OAuth20BasicTest {
         String password = "nevermind";
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password,"basic", true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
 
         // THEN
         JSONObject json = new JSONObject(response);
         assertEquals(json.get("expires_in"), "900");
     }
-
 
     @Test
     public void when_generate_client_credentials_token_set_1800_expires_in() throws Exception {
@@ -63,7 +62,7 @@ public class ExpiresInTest extends OAuth20BasicTest {
         // WHEN
         String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, redirectUri);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String response = obtainAccessTokenByRefreshTokenResponse("refresh_token", refreshToken, clientId, null);
+        String response = obtainAccessTokenByRefreshTokenResponse("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
 
         // THEN
         JSONObject json = new JSONObject(response);

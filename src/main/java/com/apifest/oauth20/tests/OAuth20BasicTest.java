@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest.oauth20.tests;
 
@@ -21,10 +21,12 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,10 +46,23 @@ public class OAuth20BasicTest extends BasicTest {
     String REDIRECT_URI = "http://example.com";
     String DEFAULT_SCOPE = "basic";
 
+    public static final String CLIENT_ID_PARAM = "client_id";
+    public static final String REDIRECT_URI_PARAM = "redirect_uri";
+    public static final String SCOPE_PARAM = "scope";
+    public static final String GRANT_TYPE_PARAM = "grant_type";
+    public static final String CODE_PARAM = "code";
+
+    public static final String REFRESH_TOKEN_PARAM = "refresh_token";
+    public static final String ACCESS_TOKEN_PARAM = "access_token";
+
+    public static final String GRANT_TYPE_PASSWORD = "password";
+    public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+    public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
+    public static final String GRANT_TYPE_AUTH_CODE = "authorization_code";
+
     Logger log = LoggerFactory.getLogger(OAuth20BasicTest.class);
 
     public OAuth20BasicTest() {
-        // TODO Auto-generated constructor stub
     }
 
     public String obtainAuthCode(String clientId, String uri) {
@@ -58,7 +73,7 @@ public class OAuth20BasicTest extends BasicTest {
         return obtainAuthCode(clientId, uri, responseType, DEFAULT_SCOPE);
     }
 
-    //GET /oauth20/authorize?client_id={clientId}&redirect_uri={uri}&response_type=code
+    // GET /oauth20/authorize?client_id={clientId}&redirect_uri={uri}&response_type=code
     public String obtainAuthCode(String clientId, String uri, String responseType, String scope) {
         URIBuilder builder = null;
         String authCode = null;
@@ -73,10 +88,10 @@ public class OAuth20BasicTest extends BasicTest {
             GetMethod get = new GetMethod(builder.build().toString());
             String response = readResponse(get);
             authCode = extractAuthCode(response);
-        } catch(IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            log.error("cannot obtain auth code", e);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error("cannot obtain auth code", e);
         }
         return authCode;
     }
@@ -85,12 +100,12 @@ public class OAuth20BasicTest extends BasicTest {
         String authCode = null;
         try {
             JSONObject json = new JSONObject(response);
-            String redirectUri = json.getString("redirect_uri");
-            if(redirectUri != null) {
+            String redirectUri = json.getString(REDIRECT_URI_PARAM);
+            if (redirectUri != null) {
                 URIBuilder builder = new URIBuilder(redirectUri);
-                List<NameValuePair> params = builder.getQueryParams();
-                for(NameValuePair pair : params){
-                    if("code".equals(pair.getName())){
+                List<org.apache.http.NameValuePair> params = builder.getQueryParams();
+                for (org.apache.http.NameValuePair pair : params) {
+                    if (CODE_PARAM.equals(pair.getName())) {
                         authCode = pair.getValue();
                         break;
                     }
@@ -98,38 +113,37 @@ public class OAuth20BasicTest extends BasicTest {
             }
             log.info(redirectUri);
         } catch (JSONException e) {
-            // cannot extract authCode, return response
-            return response;
+            //log.error("cannot extract auth code", e);
+            authCode = response;
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot extract auth code", e);
         }
         return authCode;
     }
 
     public String obtainAccessToken(String authCode, String clientId, String uri) {
-        return obtainAccessToken("authorization_code", authCode, clientId, uri);
+        return obtainAccessToken(GRANT_TYPE_AUTH_CODE, authCode, clientId, uri);
     }
 
     // POST /oauth20/token
-    //grant_type=authorization_code&redirect_uri=dada&client_id=815424409865735&code=XOPeAaFTDNdHEeRCvbA%23IaN%23pggldgbgYnAxQvVYyyG%23zteYTuxSLcz%3DTWWXTLLxPtuviPLTspxkZgeJKsyxXgZPSAEPWYQuIUCccAeQibfmWdxQiWiezNbhGaKbHlSZzZDZAAQ-ujfUouiDZHdVrlVDMFFJJQo%3DAfJemEPRZmZ-wFTNBb-Rwni%3DaRbKRKLSzWkPLAgw
+    // grant_type=authorization_code&redirect_uri=dada&client_id=815424409865735&code=XOPeAaFTDNdHEeRCvbA%23IaN%23pggldgbgYnAxQvVYyyG%23zteYTuxSLcz%3DTWWXTLLxPtuviPLTspxkZgeJKsyxXgZPSAEPWYQuIUCccAeQibfmWdxQiWiezNbhGaKbHlSZzZDZAAQ-ujfUouiDZHdVrlVDMFFJJQo%3DAfJemEPRZmZ-wFTNBb-Rwni%3DaRbKRKLSzWkPLAgw
     public String obtainAccessToken(String grantType, String authCode, String clientId, String uri) {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
         String accessToken = null;
         String response = null;
         try {
-            String requestBody = createBody(grantType, authCode, clientId, uri);
+            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
+                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
             post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
-            if(response != null) {
+            if (response != null) {
                 accessToken = extractAccessToken(response);
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot obtain access token", e);
         }
         return accessToken;
     }
@@ -138,15 +152,15 @@ public class OAuth20BasicTest extends BasicTest {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
         String response = null;
         try {
-            String requestBody = createBody(grantType, authCode, clientId, uri);
+            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
+                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
             post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot obtain access token response", e);
         }
         return response;
     }
@@ -157,40 +171,48 @@ public class OAuth20BasicTest extends BasicTest {
         try {
             response = obtainAccessTokenByRefreshTokenResponse(grantType, refreshToken, clientId, scope);
             log.info(response);
-            if(response != null) {
+            if (response != null) {
                 JSONObject json = new JSONObject(response);
-                if(json.get("access_token") != null) {
-                    accessToken = json.getString("access_token");
+                if (json.get(ACCESS_TOKEN_PARAM) != null) {
+                    accessToken = json.getString(ACCESS_TOKEN_PARAM);
                 }
             }
         } catch (JSONException e) {
-            //e.printStackTrace();
+            log.error("cannot obtain access token by refresh token", e);
             accessToken = response;
         }
         return accessToken;
     }
 
-    public String obtainAccessTokenByRefreshTokenResponse(String grantType, String refreshToken, String clientId, String scope) {
+    public String obtainAccessTokenByRefreshTokenResponse(String grantType, String refreshToken, String clientId,
+            String scope) {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
         String response = null;
         try {
-            String requestBody = createBodyRefreshToken(grantType, refreshToken, scope);
+
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
-            post.setRequestBody(requestBody);
+            if (scope != null) {
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
+                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken), new NameValuePair(SCOPE_PARAM, scope) };
+                post.setRequestBody(requestBody);
+            } else {
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
+                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken) };
+                post.setRequestBody(requestBody);
+            }
             response = readResponse(post);
             log.info(response);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot obtain access token by refresh token response", e);
         }
         return response;
     }
 
     public String obtainClientCredentialsAccessToken(String clientId, String scope, boolean addAuthHeader) {
-        String response =  obtainClientCredentialsAccessTokenResponse(clientId, scope, addAuthHeader);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, scope, addAuthHeader);
         log.info(response);
-        if(response != null) {
+        if (response != null) {
             return extractAccessToken(response);
         }
         return null;
@@ -200,40 +222,40 @@ public class OAuth20BasicTest extends BasicTest {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
         String response = null;
         try {
-            String requestBody = "grant_type=client_credentials&" + "scope=" + scope;
+            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_CLIENT_CREDENTIALS),
+                    new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-            if(addAuthHeader) {
+            if (addAuthHeader) {
                 post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
             }
             post.setRequestBody(requestBody);
             response = readResponse(post);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot obtain client credentials acces token response", e);
         }
         return response;
     }
 
-    public String obtainPasswordCredentialsAccessTokenResponse(String clientId, String username,
-            String password, String scope, boolean addAuthHeader) {
+    public String obtainPasswordCredentialsAccessTokenResponse(String clientId, String username, String password,
+            String scope, boolean addAuthHeader) {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
         String response = null;
         try {
-            String requestBody = "grant_type=password&" + "username=" + username + "&password=" + password + "&scope=" + scope;
+            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD),
+                    new NameValuePair("username", username), new NameValuePair("password", password),
+                    new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-            if(addAuthHeader) {
+            if (addAuthHeader) {
                 post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
             }
             post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot obtain password acces token response", e);
         }
         return response;
     }
-
 
     public String registerNewClient() {
         URIBuilder builder = null;
@@ -244,63 +266,75 @@ public class OAuth20BasicTest extends BasicTest {
             GetMethod get = new GetMethod(builder.build().toString());
             String response = readResponse(get);
             registerResponse = extractAuthCode(response);
-        } catch(IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            log.error("cannot register new client", e);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error("cannot register new client", e);
         }
         return registerResponse;
     }
 
+    public String registerNewScope(String scope, String description, int expiresIn) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/scopes");
+        String response = null;
+        try {
+            String requestBody = "{\"scope\":\"" + scope + "\",\"description\":\"" + description + "\"," +
+                "\"expires_in\":\"" + expiresIn + "\"}";
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            post.setRequestEntity(requestEntity);
+            response = readResponse(post);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot obtain password acces token response", e);
+        }
+        return response;
+    }
+
+    public String getClientDefaultScope(String clientId) {
+        URIBuilder builder = null;
+        String scope = null;
+        try {
+            builder = new URIBuilder(baseOAuth20Uri + "/oauth20/application");
+            builder.setParameter("client_id", clientId);
+            GetMethod get = new GetMethod(builder.build().toString());
+            String response = readResponse(get);
+            scope = extractAccessTokenScope(response);
+        } catch (IOException e) {
+            log.error("cannot obtain client default scope", e);
+        } catch (URISyntaxException e) {
+            log.error("cannot obtain client default scope", e);
+        }
+        return scope;
+    }
+
     // POST /oauth20/token/revoked
-    //{"access_token":""}
+    // {"access_token":""}
     public boolean revokeAccessToken(String token, String clientId) {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token/revoke");
         String response = null;
         boolean revoked = false;
         try {
-            String requestBody = "{\"access_token\":\""+ token + "\"}";
+            String requestBody = "{\"access_token\":\"" + token + "\"}";
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
-            post.setRequestBody(requestBody);
+            post.setRequestEntity(requestEntity);
             response = readResponse(post);
             log.info(response);
-            if(response != null) {
+            if (response != null) {
                 JSONObject json;
                 try {
                     json = new JSONObject(response);
                     revoked = json.getBoolean("revoked");
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.error("cannot revoke access token", e);
                 }
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("cannot revoke access token", e);
         }
         return revoked;
-    }
-
-    protected String createBody(String grantType, String authCode, String clientId, String redirectUri) throws IOException {
-        //grant_type=authorization_code&redirect_uri=dada&client_id=815424409865735&code=XOPeAaFTDNdHEeRCvbA%23IaN%23pggldgbgYnAxQvVYyyG%23zteYTuxSLcz%3DTWWXTLLxPtuviPLTspxkZgeJKsyxXgZPSAEPWYQuIUCccAeQibfmWdxQiWiezNbhGaKbHlSZzZDZAAQ-ujfUouiDZHdVrlVDMFFJJQo%3DAfJemEPRZmZ-wFTNBb-Rwni%3DaRbKRKLSzWkPLAgw
-        StringBuffer buf = new StringBuffer();
-        buf.append("grant_type=" + grantType + "&");
-        //buf.append("client_id=" + clientId + "&");
-        buf.append("redirect_uri=" + redirectUri + "&");
-        buf.append("code=" + authCode);
-        return buf.toString();
-    }
-
-    protected String createBodyRefreshToken(String grantType, String refreshToken, String scope) throws IOException {
-        StringBuffer buf = new StringBuffer();
-        buf.append("grant_type=" + grantType + "&");
-        //buf.append("client_id=" + clientId + "&");
-        buf.append("refresh_token=" + refreshToken + "&");
-        if(scope != null) {
-            buf.append("scope=" + scope);
-        }
-        return buf.toString();
     }
 
     protected String createBasicAuthorization(String newClientId) {
@@ -325,8 +359,8 @@ public class OAuth20BasicTest extends BasicTest {
         JSONObject jsonObj;
         try {
             jsonObj = new JSONObject(json);
-            if(jsonObj.get("refresh_token") != null) {
-                refreshToken = jsonObj.getString("refresh_token");
+            if (jsonObj.get(REFRESH_TOKEN_PARAM) != null) {
+                refreshToken = jsonObj.getString(REFRESH_TOKEN_PARAM);
             }
         } catch (JSONException e) {
             // do not log
@@ -339,12 +373,27 @@ public class OAuth20BasicTest extends BasicTest {
         JSONObject jsonObj;
         try {
             jsonObj = new JSONObject(json);
-            if(jsonObj.get("access_token") != null) {
-                accessToken = jsonObj.getString("access_token");
+            if (jsonObj.get(ACCESS_TOKEN_PARAM) != null) {
+                accessToken = jsonObj.getString(ACCESS_TOKEN_PARAM);
             }
         } catch (JSONException e) {
             // do not log
         }
         return accessToken;
+    }
+
+
+    protected String extractAccessTokenScope(String json) {
+        String accessTokenScope = json;
+        JSONObject jsonObj;
+        try {
+            jsonObj = new JSONObject(json);
+            if (jsonObj.get(SCOPE_PARAM) != null) {
+                accessTokenScope = jsonObj.getString(SCOPE_PARAM);
+            }
+        } catch (JSONException e) {
+            // do not log
+        }
+        return accessTokenScope;
     }
 }

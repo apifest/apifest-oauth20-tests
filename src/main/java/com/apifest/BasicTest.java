@@ -1,18 +1,18 @@
 /*
-* Copyright 2013-2014, ApiFest project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013-2014, ApiFest project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.apifest;
 
@@ -45,8 +45,9 @@ public class BasicTest {
 
     Logger log = LoggerFactory.getLogger(BasicTest.class);
 
-    public BasicTest(){
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("apifest-oauth.properties");
+    public BasicTest() {
+        InputStream in = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("apifest-oauth.properties");
         try {
             loadProperties(in);
         } catch (IOException e) {
@@ -73,7 +74,7 @@ public class BasicTest {
         InputStream in = null;
         try {
             int status = client.executeMethod(method);
-            if(status >= HttpStatus.SC_OK) {
+            if (status >= HttpStatus.SC_OK) {
                 in = method.getResponseBodyAsStream();
                 response = readInputStream(in);
             }
@@ -88,13 +89,13 @@ public class BasicTest {
         return response;
     }
 
-    public String readInputStream (InputStream in) throws IOException {
-        byte [] buf = new byte [4096];
+    public String readInputStream(InputStream in) throws IOException {
+        byte[] buf = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         String res = "";
         try {
             int c;
-            while((c = in.read(buf)) > 0 ) {
+            while ((c = in.read(buf)) > 0) {
                 out.write(buf);
             }
             out.flush();
