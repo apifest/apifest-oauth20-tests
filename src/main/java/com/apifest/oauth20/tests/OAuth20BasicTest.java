@@ -60,6 +60,8 @@ public class OAuth20BasicTest extends BasicTest {
     public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
     public static final String GRANT_TYPE_AUTH_CODE = "authorization_code";
 
+    public static final String EXPIRES_IN = "expires_in";
+
     Logger log = LoggerFactory.getLogger(OAuth20BasicTest.class);
 
     public OAuth20BasicTest() {
@@ -274,16 +276,28 @@ public class OAuth20BasicTest extends BasicTest {
         return registerResponse;
     }
 
-    public String registerNewScope(String scope, String description, int expiresIn) {
+    public String registerNewScope(String scope, String description, int ccExpiresIn, int passExpiresIn) {
         PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/scopes");
         String response = null;
         try {
             String requestBody = "{\"scope\":\"" + scope + "\",\"description\":\"" + description + "\"," +
-                "\"expires_in\":\"" + expiresIn + "\"}";
+                "\"cc_expires_in\":\"" + ccExpiresIn + "\",\"pass_expires_in\":\"" + passExpiresIn + "\"}";
             RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             post.setRequestEntity(requestEntity);
             response = readResponse(post);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot obtain password acces token response", e);
+        }
+        return response;
+    }
+
+    public String getAllScopes() {
+        GetMethod get = new GetMethod(baseOAuth20Uri + "/oauth20/scopes");
+        String response = null;
+        try {
+            response = readResponse(get);
             log.info(response);
         } catch (IOException e) {
             log.error("cannot obtain password acces token response", e);
@@ -382,7 +396,6 @@ public class OAuth20BasicTest extends BasicTest {
         return accessToken;
     }
 
-
     protected String extractAccessTokenScope(String json) {
         String accessTokenScope = json;
         JSONObject jsonObj;
@@ -395,5 +408,19 @@ public class OAuth20BasicTest extends BasicTest {
             // do not log
         }
         return accessTokenScope;
+    }
+
+    protected String extractAccessTokenExpiresIn(String json) {
+        String expiresIn = json;
+        JSONObject jsonObj;
+        try {
+            jsonObj = new JSONObject(json);
+            if (jsonObj.get(EXPIRES_IN) != null) {
+                expiresIn = jsonObj.getString(EXPIRES_IN);
+            }
+        } catch (JSONException e) {
+            // do not log
+        }
+        return expiresIn;
     }
 }

@@ -15,8 +15,16 @@
  */
 package com.apifest.oauth20.tests;
 
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.testng.annotations.Test;
 
 /**
@@ -39,7 +47,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_get_auth_code_with_not_client_scope_return_error() throws Exception {
         // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800);
+        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
 
         // WHEN
         String response = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, newScope);
@@ -95,7 +103,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_password_access_token_with_not_client_scope_return_error() throws Exception {
         // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800);
+        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
 
         // WHEN
         String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", newScope, true);
@@ -143,7 +151,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_client_credentials_access_token_with_not_client_scope_return_error() throws Exception {
         // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800);
+        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
 
         // WHEN
         String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
@@ -198,7 +206,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_refresh_access_token_with_not_client_scope_return_error() throws Exception {
         // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800);
+        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
 
         // WHEN
         String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
@@ -220,5 +228,59 @@ public class ScopeTest extends OAuth20BasicTest {
 
         // THEN
         assertEquals(scope, accessScope);
+    }
+
+    @Test
+    public void when_obtain_password_access_token_with_several_scopes_use_min_expires_in() throws Exception {
+        // GIVEN
+        String clientDefaultScope = getClientDefaultScope(clientId);
+        int minExpiresIn = getMinExpiresIn(clientDefaultScope, "password");
+
+        // WHEN
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind",
+                clientDefaultScope, true);
+
+        // THEN
+        String expiresIn = extractAccessTokenExpiresIn(response);
+        assertEquals(expiresIn, String.valueOf(minExpiresIn));
+    }
+
+    @Test
+    public void when_obtain_cc_access_token_with_several_scopes_use_min_expires_in() throws Exception {
+        // GIVEN
+        String clientDefaultScope = getClientDefaultScope(clientId);
+        int minExpiresIn = getMinExpiresIn(clientDefaultScope, "client_credentials");
+
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientDefaultScope, true);
+
+        // THEN
+        String expiresIn = extractAccessTokenExpiresIn(response);
+        assertEquals(expiresIn, String.valueOf(minExpiresIn));
+    }
+
+    private int getMinExpiresIn(String scopes, String granType) throws JSONException {
+        List<String> allowedScopes = Arrays.asList(scopes.split(","));
+        String allScopes = getAllScopes();
+        int min = Integer.MAX_VALUE;
+        JSONArray array = new JSONArray(allScopes);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject obj = array.getJSONObject(i);
+            if (!allowedScopes.contains(obj.getString("scope"))) {
+                continue;
+            }
+
+            int expiresIn;
+            if ("password".equals(granType)) {
+                expiresIn = obj.getInt("pass_expires_in");
+            } else {
+                expiresIn = obj.getInt("cc_expires_in");
+            }
+
+            if (expiresIn < min) {
+                min = expiresIn;
+            }
+        }
+        return min;
     }
 }
