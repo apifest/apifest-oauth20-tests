@@ -277,7 +277,7 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String registerNewScope(String scope, String description, int ccExpiresIn, int passExpiresIn) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/scopes");
+        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/scope");
         String response = null;
         try {
             String requestBody = "{\"scope\":\"" + scope + "\",\"description\":\"" + description + "\"," +
@@ -294,7 +294,7 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String getAllScopes() {
-        GetMethod get = new GetMethod(baseOAuth20Uri + "/oauth20/scopes");
+        GetMethod get = new GetMethod(baseOAuth20Uri + "/oauth20/scope");
         String response = null;
         try {
             response = readResponse(get);

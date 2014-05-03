@@ -25,6 +25,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -34,6 +35,25 @@ import org.testng.annotations.Test;
 public class ScopeTest extends OAuth20BasicTest {
 
     private static final String SCOPE_NOT_VALID = "{\"status\":\"scope not valid\"}";
+
+    String newScope = "newScope";
+
+    @BeforeTest
+    public void setup() throws Exception {
+        String scopes = getAllScopes();
+        boolean newScopeExists = false;
+        JSONArray array = new JSONArray(scopes);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject obj = array.getJSONObject(i);
+            if (newScope.equals(obj.getString("scope"))) {
+                newScopeExists = true;
+                break;
+            }
+        }
+        if (!newScopeExists) {
+            newScope = registerNewScope("newScope", "new test scope", 1800, 900);
+        }
+    }
 
     @Test
     public void when_get_auth_code_with_non_existing_scope_return_error() throws Exception {
@@ -46,9 +66,6 @@ public class ScopeTest extends OAuth20BasicTest {
 
     @Test
     public void when_get_auth_code_with_not_client_scope_return_error() throws Exception {
-        // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
-
         // WHEN
         String response = obtainAuthCode(clientId, REDIRECT_URI, RESPONSE_TYPE_CODE, newScope);
 
@@ -102,9 +119,6 @@ public class ScopeTest extends OAuth20BasicTest {
 
     @Test
     public void when_obtain_password_access_token_with_not_client_scope_return_error() throws Exception {
-        // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
-
         // WHEN
         String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", newScope, true);
 
@@ -150,9 +164,6 @@ public class ScopeTest extends OAuth20BasicTest {
 
     @Test
     public void when_obtain_client_credentials_access_token_with_not_client_scope_return_error() throws Exception {
-        // GIVEN
-        String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
-
         // WHEN
         String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
 
