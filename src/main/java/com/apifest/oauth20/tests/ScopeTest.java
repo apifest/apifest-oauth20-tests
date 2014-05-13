@@ -40,19 +40,19 @@ public class ScopeTest extends OAuth20BasicTest {
 
     @BeforeTest
     public void setup() throws Exception {
-        String scopes = getAllScopes();
-        boolean newScopeExists = false;
-        JSONArray array = new JSONArray(scopes);
-        for (int i = 0; i < array.length(); i++) {
-            JSONObject obj = array.getJSONObject(i);
-            if (newScope.equals(obj.getString("scope"))) {
-                newScopeExists = true;
-                break;
-            }
-        }
-        if (!newScopeExists) {
-            newScope = registerNewScope("newScope", "new test scope", 1800, 900);
-        }
+//        String scopes = getAllScopes();
+//        boolean newScopeExists = false;
+//        JSONArray array = new JSONArray(scopes);
+//        for (int i = 0; i < array.length(); i++) {
+//            JSONObject obj = array.getJSONObject(i);
+//            if (newScope.equals(obj.getString("scope"))) {
+//                newScopeExists = true;
+//                break;
+//            }
+//        }
+//        if (!newScopeExists) {
+//            newScope = registerNewScope("newScope", "new test scope", 1800, 900);
+//        }
     }
 
     @Test
@@ -131,7 +131,7 @@ public class ScopeTest extends OAuth20BasicTest {
             throws Exception {
         // GIVEN
         String defaultScope = getClientDefaultScope(clientId);
-        String accessScope = defaultScope.split(",")[0];
+        String accessScope = defaultScope.split(" ")[0];
 
         // WHEN
         String response = obtainPasswordCredentialsAccessTokenResponse(clientId, "rossi", "nevermind", accessScope,
@@ -176,7 +176,7 @@ public class ScopeTest extends OAuth20BasicTest {
             throws Exception {
         // GIVEN
         String defaultScope = getClientDefaultScope(clientId);
-        String accessScope = defaultScope.split(",")[0];
+        String accessScope = defaultScope.split(" ")[0];
 
         // WHEN
         String response = obtainClientCredentialsAccessTokenResponse(clientId, accessScope, true);
@@ -271,7 +271,7 @@ public class ScopeTest extends OAuth20BasicTest {
     }
 
     private int getMinExpiresIn(String scopes, String granType) throws JSONException {
-        List<String> allowedScopes = Arrays.asList(scopes.split(","));
+        List<String> allowedScopes = Arrays.asList(scopes.split(" "));
         String allScopes = getAllScopes();
         int min = Integer.MAX_VALUE;
         JSONArray array = new JSONArray(allScopes);
