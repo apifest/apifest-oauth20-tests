@@ -19,6 +19,7 @@ package com.apifest.oauth20.tests;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -29,14 +30,18 @@ import org.testng.annotations.Test;
  */
 public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
 
+    @BeforeTest
+    public void setup() {
+        registerDefaultScope();
+        String clientResponse = registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
+        clientId = extractClientId(clientResponse);
+        clientSecret = extractClientSecret(clientResponse);
+    }
+
     @Test
     public void when_username_and_password_valid_generate_token() throws Exception {
-        // GIVEN
-        String username = "rossi";
-        String password = "nevermind";
-
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
 
         // THEN
         assertTrue(response.contains("access_token"));
@@ -49,7 +54,7 @@ public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
         String password = "nevermind";
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
 
         // THEN
         assertEquals(response, "{\"error\": \"invalid username/password\"}");
@@ -63,23 +68,10 @@ public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
 
         // WHEN
         String response = obtainPasswordCredentialsAccessTokenResponse("invalid_client_id", username, password,
-                "basic", true);
+                DEFAULT_SCOPE, true);
 
         // THEN
         assertEquals(response, "{\"error\": \"invalid client_id\"}");
     }
 
-    @Test
-    public void when_username_and_password_valid_return_token() throws Exception {
-        // GIVEN
-        String username = "rossi";
-        String password = "nevermind";
-
-        // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
-
-        // THEN
-        assertTrue(!response.contains("{\"error\""));
-        log.info(response);
-    }
 }

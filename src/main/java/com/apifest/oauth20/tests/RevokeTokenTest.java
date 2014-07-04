@@ -18,6 +18,7 @@ package com.apifest.oauth20.tests;
 
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.apifest.mapping.tests.MappingBasicTest;
@@ -30,12 +31,18 @@ import com.apifest.mapping.tests.MappingBasicTest;
  */
 public class RevokeTokenTest extends OAuth20BasicTest {
 
+    @BeforeTest
+    public void setup() {
+        registerDefaultScope();
+        String clientResponse = registerDefaultClient();
+        clientId = extractClientId(clientResponse);
+        clientSecret = extractClientSecret(clientResponse);
+    }
+
     @Test
     public void when_token_revoked_cannot_use_it() throws Exception {
         // GIVEN
-        String username = "rossi";
-        String password = "nevermind";
-        String tokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
+        String tokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
         String token = extractAccessToken(tokenResponse);
 
         // WHEN

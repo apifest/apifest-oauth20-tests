@@ -18,6 +18,8 @@ package com.apifest.oauth20.tests;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -28,12 +30,21 @@ import org.testng.annotations.Test;
 public class AuthCodeFlowTest extends OAuth20BasicTest {
 
     public AuthCodeFlowTest() {
+        super();
+    }
+
+    @BeforeTest
+    public void setup() {
+        registerDefaultScope();
+        String newClientResponse = registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
+        clientId = extractClientId(newClientResponse);
+        clientSecret = extractClientSecret(newClientResponse);
     }
 
     @Test
     public void when_auth_code_obtained_with_invalid_client_id_return_error() throws Exception {
         // WHEN
-        String response = obtainAuthCode(clientId + "_invalid", REDIRECT_URI);
+        String response = obtainAuthCode(clientId + "_invalid", DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(response, "{\"error\": \"invalid client_id\"}");
@@ -43,7 +54,7 @@ public class AuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_obtained_with_invalid_response_type_return_error() throws Exception {
         // WHEN
-        String response = obtainAuthCode(clientId, REDIRECT_URI, "unknown_type");
+        String response = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI, "unknown_type");
 
         // THEN
         assertEquals(response, "{\"error\": \"unsupported_response_type\"}");
@@ -53,7 +64,7 @@ public class AuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_obtained_with_invalid_redirect_uri_return_error() throws Exception {
         // WHEN
-        String response = obtainAuthCode(clientId, "htp:/example.com");
+        String response = obtainAuthCode(clientId, "htp:/127.0.0.1");
 
         // THEN
         assertEquals(response, "{\"error\": \"invalid redirect_uri\"}");
@@ -63,7 +74,7 @@ public class AuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_obtained_with_valid_redirect_uri_return_code() throws Exception {
         // WHEN
-        String response = obtainAuthCode(clientId, "http://example.com");
+        String response = obtainAuthCode(clientId, "http://127.0.0.1");
 
         // THEN
         assertTrue(!response.contains("error"));

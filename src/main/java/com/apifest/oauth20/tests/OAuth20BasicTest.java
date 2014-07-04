@@ -43,11 +43,16 @@ import com.apifest.BasicTest;
 public class OAuth20BasicTest extends BasicTest {
 
     String RESPONSE_TYPE_CODE = "code";
-    String REDIRECT_URI = "http://example.com";
+    String DEFAULT_REDIRECT_URI = "http://127.0.0.1:8080";
     String DEFAULT_SCOPE = "basic";
+    String DEFAULT_CLIENT_NAME = "default_client";
+    String DEFAULT_CLIENT_DESCR = "test description";
+    int DEFAULT_CC_EXPIRES_IN = 1800;
+    int DEFAULT_PASS_EXPIRES_IN = 900;
 
     public static final String CLIENT_ID_PARAM = "client_id";
     public static final String REDIRECT_URI_PARAM = "redirect_uri";
+    public static final String RESPONSE_TYPE_PARAM = "response_type";
     public static final String SCOPE_PARAM = "scope";
     public static final String GRANT_TYPE_PARAM = "grant_type";
     public static final String CODE_PARAM = "code";
@@ -62,9 +67,20 @@ public class OAuth20BasicTest extends BasicTest {
 
     public static final String EXPIRES_IN = "expires_in";
 
+    public static final String AUTHORIZE_ENDPOINT = "/oauth20/authorize";
+    public static final String TOKEN_ENDPOINT = "/oauth20/token";
+    public static final String APPLICATION_ENDPOINT = "/oauth20/application";
+    public static final String SCOPE_ENDPOINT = "/oauth20/scope";
+    public static final String TOKEN_REVOKE_ENDPOINT = "/oauth20/token/revoke";
+
     Logger log = LoggerFactory.getLogger(OAuth20BasicTest.class);
 
-    public OAuth20BasicTest() {
+    public void registerDefaultScope() {
+        registerNewScope(DEFAULT_SCOPE, DEFAULT_CLIENT_DESCR, DEFAULT_CC_EXPIRES_IN, DEFAULT_PASS_EXPIRES_IN);
+    }
+
+    public String registerDefaultClient() {
+        return registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
     }
 
     public String obtainAuthCode(String clientId, String uri) {
@@ -80,11 +96,11 @@ public class OAuth20BasicTest extends BasicTest {
         URIBuilder builder = null;
         String authCode = null;
         try {
-            builder = new URIBuilder(baseOAuth20Uri + "/oauth20/authorize");
-            builder.setParameter("client_id", clientId);
-            builder.setParameter("redirect_uri", uri);
-            builder.setParameter("response_type", responseType);
-            builder.setParameter("scope", scope);
+            builder = new URIBuilder(baseOAuth20Uri + AUTHORIZE_ENDPOINT);
+            builder.setParameter(CLIENT_ID_PARAM, clientId);
+            builder.setParameter(REDIRECT_URI_PARAM, uri);
+            builder.setParameter(RESPONSE_TYPE_PARAM, responseType);
+            builder.setParameter(SCOPE_PARAM, scope);
             builder.setParameter("user_id", "12345");
 
             GetMethod get = new GetMethod(builder.build().toString());
@@ -130,7 +146,7 @@ public class OAuth20BasicTest extends BasicTest {
     // POST /oauth20/token
     // grant_type=authorization_code&redirect_uri=dada&client_id=815424409865735&code=XOPeAaFTDNdHEeRCvbA%23IaN%23pggldgbgYnAxQvVYyyG%23zteYTuxSLcz%3DTWWXTLLxPtuviPLTspxkZgeJKsyxXgZPSAEPWYQuIUCccAeQibfmWdxQiWiezNbhGaKbHlSZzZDZAAQ-ujfUouiDZHdVrlVDMFFJJQo%3DAfJemEPRZmZ-wFTNBb-Rwni%3DaRbKRKLSzWkPLAgw
     public String obtainAccessToken(String grantType, String authCode, String clientId, String uri) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String accessToken = null;
         String response = null;
         try {
@@ -151,7 +167,7 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String obtainAccessTokenResponse(String grantType, String authCode, String clientId, String uri) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
             NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
@@ -188,7 +204,7 @@ public class OAuth20BasicTest extends BasicTest {
 
     public String obtainAccessTokenByRefreshTokenResponse(String grantType, String refreshToken, String clientId,
             String scope) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
 
@@ -211,8 +227,8 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String obtainClientCredentialsAccessToken(String clientId, String scope, boolean addAuthHeader) {
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, scope, addAuthHeader);
+    public String obtainClientCredentialsAccessToken(String currentClientId, String scope, boolean addAuthHeader) {
+        String response = obtainClientCredentialsAccessTokenResponse(currentClientId, scope, addAuthHeader);
         log.info(response);
         if (response != null) {
             return extractAccessToken(response);
@@ -220,15 +236,15 @@ public class OAuth20BasicTest extends BasicTest {
         return null;
     }
 
-    public String obtainClientCredentialsAccessTokenResponse(String clientId, String scope, boolean addAuthHeader) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
+    public String obtainClientCredentialsAccessTokenResponse(String currentClientId, String scope, boolean addAuthHeader) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
             NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_CLIENT_CREDENTIALS),
                     new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             if (addAuthHeader) {
-                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
             }
             post.setRequestBody(requestBody);
             response = readResponse(post);
@@ -238,9 +254,9 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String obtainPasswordCredentialsAccessTokenResponse(String clientId, String username, String password,
+    public String obtainPasswordCredentialsAccessTokenResponse(String currentClientId, String username, String password,
             String scope, boolean addAuthHeader) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token");
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
             NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD),
@@ -248,7 +264,7 @@ public class OAuth20BasicTest extends BasicTest {
                     new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             if (addAuthHeader) {
-                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
             }
             post.setRequestBody(requestBody);
             response = readResponse(post);
@@ -259,42 +275,55 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String registerNewClient() {
-        URIBuilder builder = null;
-        String registerResponse = null;
-        try {
-            builder = new URIBuilder(baseOAuth20Uri + "/oauth20/register");
-            builder.setParameter("app_name", "NewTestClient");
-            GetMethod get = new GetMethod(builder.build().toString());
-            String response = readResponse(get);
-            registerResponse = extractAuthCode(response);
-        } catch (IOException e) {
-            log.error("cannot register new client", e);
-        } catch (URISyntaxException e) {
-            log.error("cannot register new client", e);
-        }
-        return registerResponse;
-    }
-
-    public String registerNewScope(String scope, String description, int ccExpiresIn, int passExpiresIn) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/scope");
+    public String registerNewClient(String clientName, String scope, String redirectUri) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + APPLICATION_ENDPOINT);
         String response = null;
         try {
-            String requestBody = "{\"scope\":\"" + scope + "\",\"description\":\"" + description + "\"," +
-                "\"cc_expires_in\":\"" + ccExpiresIn + "\",\"pass_expires_in\":\"" + passExpiresIn + "\"}";
+            JSONObject json = new JSONObject();
+            json.put("name", clientName);
+            json.put("description", "some descr");
+            json.put("scope", scope);
+            json.put("redirect_uri", redirectUri);
+
+            String requestBody = json.toString();
             RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             post.setRequestEntity(requestEntity);
             response = readResponse(post);
             log.info(response);
         } catch (IOException e) {
-            log.error("cannot obtain password acces token response", e);
+            log.error("cannot register new client app", e);
+        } catch (JSONException e) {
+            log.error("cannot register new client app", e);
+        }
+        return response;
+    }
+
+    public String registerNewScope(String scope, String description, int ccExpiresIn, int passExpiresIn) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + SCOPE_ENDPOINT);
+        String response = null;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("scope", scope);
+            json.put("description", description);
+            json.put("cc_expires_in", ccExpiresIn);
+            json.put("pass_expires_in", passExpiresIn);
+            String requestBody = json.toString();
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            post.setRequestEntity(requestEntity);
+            response = readResponse(post);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot register new scope", e);
+        } catch (JSONException e) {
+            log.error("cannot register new scope", e);
         }
         return response;
     }
 
     public String getAllScopes() {
-        GetMethod get = new GetMethod(baseOAuth20Uri + "/oauth20/scope");
+        GetMethod get = new GetMethod(baseOAuth20Uri + SCOPE_ENDPOINT);
         String response = null;
         try {
             response = readResponse(get);
@@ -305,12 +334,12 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String getClientDefaultScope(String clientId) {
+    public String getClientDefaultScope(String currentClientId) {
         URIBuilder builder = null;
         String scope = null;
         try {
-            builder = new URIBuilder(baseOAuth20Uri + "/oauth20/application");
-            builder.setParameter("client_id", clientId);
+            builder = new URIBuilder(baseOAuth20Uri + APPLICATION_ENDPOINT);
+            builder.setParameter(CLIENT_ID_PARAM, currentClientId);
             GetMethod get = new GetMethod(builder.build().toString());
             String response = readResponse(get);
             scope = extractAccessTokenScope(response);
@@ -322,17 +351,17 @@ public class OAuth20BasicTest extends BasicTest {
         return scope;
     }
 
-    // POST /oauth20/token/revoked
-    // {"access_token":""}
-    public boolean revokeAccessToken(String token, String clientId) {
-        PostMethod post = new PostMethod(baseOAuth20Uri + "/oauth20/token/revoke");
+    public boolean revokeAccessToken(String token, String currentClientId) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_REVOKE_ENDPOINT);
         String response = null;
         boolean revoked = false;
         try {
-            String requestBody = "{\"access_token\":\"" + token + "\"}";
+            JSONObject reqJson = new JSONObject();
+            reqJson.put(ACCESS_TOKEN_PARAM, token);
+            String requestBody = reqJson.toString();
             RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
             post.setRequestEntity(requestEntity);
             response = readResponse(post);
             log.info(response);
@@ -347,12 +376,15 @@ public class OAuth20BasicTest extends BasicTest {
             }
         } catch (IOException e) {
             log.error("cannot revoke access token", e);
+        } catch (JSONException e) {
+            log.error("cannot revoke access token", e);
         }
         return revoked;
     }
 
+    // TODO: check
     protected String createBasicAuthorization(String newClientId) {
-        String value = (newClientId == null) ? clientId : newClientId + ":" + clientSecret;
+        String value = newClientId + ":" + clientSecret;
         String encodedValue = new String(Base64.encodeBase64(value.getBytes()));
         return "Basic " + encodedValue;
     }
@@ -366,6 +398,17 @@ public class OAuth20BasicTest extends BasicTest {
             // do not log
         }
         return clientId;
+    }
+
+    protected String extractClientSecret(String json) {
+        String clientSecret = null;
+        try {
+            JSONObject jsonObj = new JSONObject(json);
+            clientSecret = jsonObj.getString("client_secret");
+        } catch (JSONException e) {
+            // do not log
+        }
+        return clientSecret;
     }
 
     protected String extractRefreshToken(String json) {

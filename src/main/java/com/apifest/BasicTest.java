@@ -36,12 +36,10 @@ public class BasicTest {
 
     public static String clientId;
     public static String clientSecret;
+    public static String username;
+    public static String password;
     public static String baseOAuth20Uri;
     public static String apifestUri;
-    public static String dbUri;
-    public static String redisSentinels;
-    public static String redisMaster;
-    public static String oauth20Database;
 
     Logger log = LoggerFactory.getLogger(BasicTest.class);
 
@@ -58,14 +56,10 @@ public class BasicTest {
     protected void loadProperties(InputStream in) throws IOException {
         Properties props = new Properties();
         props.load(in);
-        clientId = props.getProperty("client_id");
-        clientSecret = props.getProperty("client_secret");
+        username = props.getProperty("username");
+        password = props.getProperty("password");
         baseOAuth20Uri = props.getProperty("base_oauth20_uri");
         apifestUri = props.getProperty("apifest_uri");
-        dbUri = props.getProperty("db_uri");
-        redisSentinels = props.getProperty("redis.sentinels");
-        redisMaster = props.getProperty("redis.master");
-        oauth20Database = props.getProperty("oauth20.database");
     }
 
     public String readResponse(HttpMethod method) throws IOException {

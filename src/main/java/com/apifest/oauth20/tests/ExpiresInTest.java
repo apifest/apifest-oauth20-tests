@@ -19,6 +19,7 @@ package com.apifest.oauth20.tests;
 import static org.testng.Assert.assertEquals;
 
 import org.json.JSONObject;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -29,45 +30,47 @@ import org.testng.annotations.Test;
  */
 public class ExpiresInTest extends OAuth20BasicTest {
 
-    @Test
-    public void when_generate_password_token_set_900_expires_in() throws Exception {
-        // GIVEN
-        String username = "rossi";
-        String password = "nevermind";
-
-        // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "basic", true);
-
-        // THEN
-        JSONObject json = new JSONObject(response);
-        assertEquals(json.get("expires_in"), "900");
+    @BeforeTest
+    public void setup() {
+        registerDefaultScope();
+        String clientResponse = registerDefaultClient();
+        clientId = extractClientId(clientResponse);
+        clientSecret = extractClientSecret(clientResponse);
     }
 
     @Test
-    public void when_generate_client_credentials_token_set_1800_expires_in() throws Exception {
+    public void when_generate_password_token_set_DEFAULT_PASS_EXPIRES_IN_expires_in() throws Exception {
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, "basic", true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
 
         // THEN
         JSONObject json = new JSONObject(response);
-        assertEquals(json.get("expires_in"), "1800");
+        assertEquals(json.get("expires_in"), String.valueOf(DEFAULT_PASS_EXPIRES_IN));
     }
 
     @Test
-    public void when_generate_refresh_type_token_set_900_expires_in() throws Exception {
+    public void when_generate_client_credentials_token_set_DEFAULT_CC_EXPIRES_IN_expires_in() throws Exception {
+        // WHEN
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, DEFAULT_SCOPE, true);
+
+        // THEN
+        JSONObject json = new JSONObject(response);
+        assertEquals(json.get("expires_in"), String.valueOf(DEFAULT_CC_EXPIRES_IN));
+    }
+
+    @Test
+    public void when_generate_refresh_type_token_set_DEFAULT_PASS_EXPIRES_IN_expires_in() throws Exception {
         // GIVEN
-        String redirectUri = "http://example.com";
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, redirectUri);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
         String response = obtainAccessTokenByRefreshTokenResponse("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
 
         // THEN
         JSONObject json = new JSONObject(response);
-        // TODO: use method to get scope expires_in
-        assertEquals(json.get("expires_in"), "900");
+        assertEquals(json.get("expires_in"), String.valueOf(DEFAULT_PASS_EXPIRES_IN));
     }
 
 }

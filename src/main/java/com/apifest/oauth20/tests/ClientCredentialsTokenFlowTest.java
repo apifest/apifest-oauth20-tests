@@ -19,6 +19,7 @@ package com.apifest.oauth20.tests;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -28,6 +29,14 @@ import org.testng.annotations.Test;
  *
  */
 public class ClientCredentialsTokenFlowTest extends OAuth20BasicTest {
+
+    @BeforeTest
+    public void setup() {
+        registerDefaultScope();
+        String newClientResponse = registerDefaultClient();
+        clientId = extractClientId(newClientResponse);
+        clientSecret = extractClientSecret(newClientResponse);
+    }
 
     @Test
     public void when_valid_client_id_and_client_secret_in_Authorization_Header_issue_token() throws Exception {
@@ -42,7 +51,7 @@ public class ClientCredentialsTokenFlowTest extends OAuth20BasicTest {
     @Test
     public void when_invalid_client_id_and_client_secret_in_Authorization_Header_return_error() throws Exception {
         // WHEN
-        String accessToken = obtainClientCredentialsAccessToken("invalid_clientId", "basic", true);
+        String accessToken = obtainClientCredentialsAccessToken("invalid_clientId", DEFAULT_SCOPE, true);
 
         // THEN
         assertTrue(accessToken.contains("{\"error\": \"invalid client_id\"}"));
@@ -51,7 +60,7 @@ public class ClientCredentialsTokenFlowTest extends OAuth20BasicTest {
     @Test
     public void when_no_Authorization_Header_return_error() throws Exception {
         // WHEN
-        String accessToken = obtainClientCredentialsAccessToken(clientId, "basic", false);
+        String accessToken = obtainClientCredentialsAccessToken(clientId, DEFAULT_SCOPE, false);
 
         // THEN
         assertTrue(accessToken.contains("{\"error\": \"invalid client_id\"}"));

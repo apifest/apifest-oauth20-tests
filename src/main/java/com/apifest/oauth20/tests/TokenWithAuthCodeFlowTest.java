@@ -20,11 +20,8 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
-import com.apifest.BasicTest;
-import com.apifest.TestDBFactory;
-import com.apifest.TestDBManager;
 
 /**
  * Test cases for obtaining access token with auth code.
@@ -34,15 +31,21 @@ import com.apifest.TestDBManager;
  */
 public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
 
-    String redirectUri = "http://example.com";
+    @BeforeTest
+    public void setup() throws Exception {
+        registerDefaultScope();
+        String clientResponse = registerDefaultClient();
+        clientId = extractClientId(clientResponse);
+        clientSecret = extractClientSecret(clientResponse);
+    }
 
     @Test
     public void when_invalid_auth_code_is_used_to_generate_token_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode + "_invalid", clientId, redirectUri);
+        String accessTokenResponse = obtainAccessToken(authCode + "_invalid", clientId, DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
@@ -51,10 +54,10 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_is_used_with_another_client_id_to_generate_token_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId + "_invalid", redirectUri);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId + "_invalid", DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
@@ -63,12 +66,12 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_is_used_with_another_valid_client_id_to_generate_token_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
-        String newClientResponse = registerNewClient();
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
+        String newClientResponse = registerNewClient("NewTestClient", DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         String newClientId = extractClientId(newClientResponse);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, newClientId + "_invalid", redirectUri);
+        String accessTokenResponse = obtainAccessToken(authCode, newClientId + "_invalid", DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
@@ -77,20 +80,20 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_is_used_with_another_redirect_id_to_generate_token_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, redirectUri + "_invalid");
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI + "_invalid");
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
     }
 
     @Test
-    public void when_auth_code_is_used_with_redirect_id_but_generation_of_token_with_no_redirect_uri_return_error()
+    public void when_auth_code_is_used_with_redirect_id_but_generation_of_token_with_no_DEFAULT_REDIRECT_URI_return_error()
             throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
         String accessTokenResponse = obtainAccessToken(authCode, clientId, null + "_invalid");
@@ -102,10 +105,10 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_is_valid_but_grant_type_is_invalid_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken("invalid grant_type", authCode, clientId, redirectUri);
+        String accessTokenResponse = obtainAccessToken("invalid grant_type", authCode, clientId, DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"unsupported_grant_type\"}");
@@ -114,11 +117,11 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     @Test
     public void when_auth_code_is_already_used_then_return_error() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        obtainAccessToken(authCode, clientId, redirectUri);
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, redirectUri);
+        obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
         // validate access token
 
         // THEN
@@ -126,33 +129,12 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
     }
 
     @Test
-    public void when_auth_code_is_already_used_but_another_redirect_uri_then_issue_token() throws Exception {
-        // GIVEN
-        String redirectUri2 = redirectUri + "_another";
-        String authCode1 = obtainAuthCode(clientId, redirectUri);
-        String authCode2 = obtainAuthCode(clientId, redirectUri2);
-        // update value of authCode2 to be same as authCode1
-        TestDBManager db = TestDBFactory.getInstance(BasicTest.oauth20Database);
-        db.updateAuthCodeValue(authCode2, redirectUri2, authCode1);
-
-        // WHEN
-        // use authCode1
-        obtainAccessToken(authCode1, clientId, redirectUri);
-        String accessTokenResponse = obtainAccessToken(authCode1, clientId, redirectUri2);
-        // validate access token
-
-        // THEN
-        assertNotNull(accessTokenResponse);
-        assertTrue(!accessTokenResponse.contains("{\"error\""));
-    }
-
-    @Test
     public void when_auth_code_is_used_with_same_client_id_then_access_token_issued() throws Exception {
         // GIVEN
-        String authCode = obtainAuthCode(clientId, redirectUri);
+        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, redirectUri);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
         // validate access token
 
         // THEN

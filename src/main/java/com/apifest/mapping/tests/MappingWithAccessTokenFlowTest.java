@@ -56,7 +56,7 @@ public class MappingWithAccessTokenFlowTest extends MappingBasicTest {
             throws Exception {
         // GIVEN
         OAuth20BasicTest oauth = new OAuth20BasicTest();
-        String redirectUri = "http://example.com";
+        String redirectUri = "http://127.0.0.1";
         String authCode = oauth.obtainAuthCode(clientId, redirectUri, "code", "extended");
         String accessTokenResponse = oauth.obtainAccessToken("authorization_code", authCode,
                 clientId, redirectUri);
@@ -72,7 +72,7 @@ public class MappingWithAccessTokenFlowTest extends MappingBasicTest {
     public void when_mapping_with_valid_access_token_return_response() throws Exception {
         // GIVEN
         OAuth20BasicTest oauth = new OAuth20BasicTest();
-        String redirectUri = "http://example.com";
+        String redirectUri = "http://127.0.0.1";
         String authCode = oauth.obtainAuthCode(clientId, redirectUri);
         String accessTokenResponse = oauth.obtainAccessToken("authorization_code", authCode, clientId, redirectUri);
 
