@@ -21,7 +21,6 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.apifest.mapping.tests.MappingBasicTest;
 
 /**
  * Test cases for access token revocation.
@@ -51,9 +50,8 @@ public class RevokeTokenTest extends OAuth20BasicTest {
         // THEN
         assertTrue(revoked);
 
-        // try mapping GET /me
-        MappingBasicTest mappingTest = new MappingBasicTest();
-        String response = mappingTest.getMe(token);
-        assertTrue(response.contains("access token not valid"));
+        // check token validate
+        String response = validateToken(token);
+        assertTrue(response.contains("\"valid\":false"));
     }
 }

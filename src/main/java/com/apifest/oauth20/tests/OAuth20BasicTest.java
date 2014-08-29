@@ -42,11 +42,11 @@ import com.apifest.BasicTest;
  */
 public class OAuth20BasicTest extends BasicTest {
 
-    String RESPONSE_TYPE_CODE = "code";
-    String DEFAULT_REDIRECT_URI = "http://127.0.0.1:8080";
-    String DEFAULT_SCOPE = "basic";
-    String DEFAULT_CLIENT_NAME = "default_client";
-    String DEFAULT_CLIENT_DESCR = "test description";
+    public static final String RESPONSE_TYPE_CODE = "code";
+    public static final String DEFAULT_REDIRECT_URI = "http://127.0.0.1:8080";
+    public static final String DEFAULT_SCOPE = "basic";
+    public static final String DEFAULT_CLIENT_NAME = "default_client";
+    public static final String DEFAULT_CLIENT_DESCR = "test description";
     int DEFAULT_CC_EXPIRES_IN = 1800;
     int DEFAULT_PASS_EXPIRES_IN = 900;
 
@@ -72,6 +72,7 @@ public class OAuth20BasicTest extends BasicTest {
     public static final String APPLICATION_ENDPOINT = "/oauth20/application";
     public static final String SCOPE_ENDPOINT = "/oauth20/scope";
     public static final String TOKEN_REVOKE_ENDPOINT = "/oauth20/token/revoke";
+    public static final String TOKEN_VALIDATE_ENDPOINT = "/oauth20/token/validate";
 
     Logger log = LoggerFactory.getLogger(OAuth20BasicTest.class);
 
@@ -299,6 +300,33 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
+    public String registerNewClientWithPredefinedClientId(String clientName, String scope, String redirectUri, String clientId, String clientSecret) {
+        PostMethod post = new PostMethod(baseOAuth20Uri + APPLICATION_ENDPOINT);
+        String response = null;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("name", clientName);
+            json.put("description", "some descr");
+            json.put("scope", scope);
+            json.put("redirect_uri", redirectUri);
+            json.put("client_id", clientId);
+            json.put("client_secret", clientSecret);
+
+            String requestBody = json.toString();
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            post.setRequestEntity(requestEntity);
+            response = readResponse(post);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot register new client app", e);
+        } catch (JSONException e) {
+            log.error("cannot register new client app", e);
+        }
+        post.releaseConnection();
+        return response;
+    }
+
     public String registerNewScope(String scope, String description, int ccExpiresIn, int passExpiresIn) {
         PostMethod post = new PostMethod(baseOAuth20Uri + SCOPE_ENDPOINT);
         String response = null;
@@ -380,6 +408,22 @@ public class OAuth20BasicTest extends BasicTest {
             log.error("cannot revoke access token", e);
         }
         return revoked;
+    }
+
+    public String validateToken(String token) {
+        URIBuilder builder = null;
+        String response = null;
+        try {
+            builder = new URIBuilder(baseOAuth20Uri + TOKEN_VALIDATE_ENDPOINT);
+            GetMethod get = new GetMethod(builder.build().toString());
+            get.setQueryString("token=" + token);
+            response = readResponse(get);
+        } catch (IOException e) {
+            log.error("cannot obtain client default scope", e);
+        } catch (URISyntaxException e) {
+            log.error("cannot obtain client default scope", e);
+        }
+        return response;
     }
 
     // TODO: check
