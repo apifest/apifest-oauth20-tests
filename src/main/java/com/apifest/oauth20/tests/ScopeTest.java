@@ -315,6 +315,21 @@ public class ScopeTest extends OAuth20BasicTest {
         assertEquals(ok, "{\"status\":\"scope successfully updated\"}");
     }
 
+    @Test
+    public void when_register_scope_with_space_return_error() throws Exception {
+        // GIVEN
+        String scopeName = "scope with space";
+        String description = "descr";
+        int ccExpiresIn = 1800;
+        int passExpiresIn = 900;
+
+        // WHEN
+        String response = registerNewScope(scopeName, description, ccExpiresIn, passExpiresIn);
+
+        // THEN
+        assertEquals(response, "{\"error\":\"scope name cannot contain space\"}");
+    }
+
     private String extractScopeField(String allScopes, String scopeName, String field) throws JSONException {
         String description = null;
         JSONArray array = new JSONArray(allScopes);
