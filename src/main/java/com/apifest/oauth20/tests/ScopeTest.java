@@ -15,6 +15,10 @@
  */
 package com.apifest.oauth20.tests;
 
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.*;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -257,6 +261,70 @@ public class ScopeTest extends OAuth20BasicTest {
         // THEN
         String expiresIn = extractAccessTokenExpiresIn(response);
         assertEquals(expiresIn, String.valueOf(minExpiresIn));
+    }
+
+    @Test
+    public void update_existing_scope() throws Exception {
+        // GIVEN
+        String scopeName = "newScopeForUpdate2";
+        String description = "descr";
+        int ccExpiresIn = 1800;
+        int passExpiresIn = 900;
+        registerNewScope(scopeName, description, ccExpiresIn, passExpiresIn);
+        String newDescription = "new updated description";
+
+        // WHEN
+        String ok = updateScope(scopeName, newDescription, ccExpiresIn, passExpiresIn);
+
+        // THEN
+        assertEquals(ok, "{\"status\":\"scope successfully updated\"}");
+        String allScopes = getAllScopes();
+        String scopeDescr = extractScopeField(allScopes, scopeName, "description");
+        assertEquals(scopeDescr, newDescription);
+
+        // revert the description
+        ok = updateScope(scopeName, description, ccExpiresIn, passExpiresIn);
+        assertEquals(ok, "{\"status\":\"scope successfully updated\"}");
+    }
+
+    @Test
+    public void update_existing_scope_description_only() throws Exception {
+        // GIVEN
+        String scopeName = "newScopeForUpdate2";
+        String description = "descr";
+        int ccExpiresIn = 1800;
+        int passExpiresIn = 900;
+        registerNewScope(scopeName, description, ccExpiresIn, passExpiresIn);
+        String newDescription = "new updated description";
+
+        // WHEN
+        String ok = updateScope(scopeName, newDescription, null, null);
+
+        // THEN
+        assertEquals(ok, "{\"status\":\"scope successfully updated\"}");
+        String allScopes = getAllScopes();
+        String scopeDescr = extractScopeField(allScopes, scopeName, "description");
+        assertEquals(scopeDescr, newDescription);
+        int resCcExpiresIn = Integer.valueOf(extractScopeField(allScopes, scopeName, "cc_expires_in"));
+        assertTrue(resCcExpiresIn == ccExpiresIn);
+        int resPassExpiresIn = Integer.valueOf(extractScopeField(allScopes, scopeName, "pass_expires_in"));
+        assertTrue(resPassExpiresIn == passExpiresIn);
+
+        // revert the description
+        ok = updateScope(scopeName, description, ccExpiresIn, passExpiresIn);
+        assertEquals(ok, "{\"status\":\"scope successfully updated\"}");
+    }
+
+    private String extractScopeField(String allScopes, String scopeName, String field) throws JSONException {
+        String description = null;
+        JSONArray array = new JSONArray(allScopes);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject obj = array.getJSONObject(i);
+            if (obj.getString("scope").equals(scopeName)) {
+                description = obj.getString(field);
+            }
+        }
+        return description;
     }
 
     private int getMinExpiresIn(String scopes, String granType) throws JSONException {

@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.http.HttpHeaders;
@@ -377,6 +378,29 @@ public class OAuth20BasicTest extends BasicTest {
             log.error("cannot obtain client default scope", e);
         }
         return scope;
+    }
+
+    public String updateScope(String scope, String description, Integer ccExpiresIn, Integer passExpiresIn) {
+        PutMethod put = new PutMethod(baseOAuth20Uri + SCOPE_ENDPOINT);
+        String response = null;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("scope", scope);
+            json.put("description", description);
+            json.put("cc_expires_in", ccExpiresIn);
+            json.put("pass_expires_in", passExpiresIn);
+            String requestBody = json.toString();
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            put.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            put.setRequestEntity(requestEntity);
+            response = readResponse(put);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot update scope", e);
+        } catch (JSONException e) {
+            log.error("cannot update scope", e);
+        }
+        return response;
     }
 
     public boolean revokeAccessToken(String token, String currentClientId) {
