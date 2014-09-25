@@ -52,6 +52,6 @@ public class RevokeTokenTest extends OAuth20BasicTest {
 
         // check token validate
         String response = validateToken(token);
-        assertTrue(response.contains("\"valid\":false"));
+        assertTrue(response.contains("\"error\":\"invalid access token\""));
     }
 }
