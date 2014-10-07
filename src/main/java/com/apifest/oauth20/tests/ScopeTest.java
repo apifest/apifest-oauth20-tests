@@ -183,7 +183,7 @@ public class ScopeTest extends OAuth20BasicTest {
     public void when_obtain_refresh_access_token_with_non_existing_scope_return_error() throws Exception {
         // WHEN
         String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId,  username, password,
-                "non-existing", true);
+                DEFAULT_SCOPE, true);
         String refreshToken = extractRefreshToken(accessTokenResponse);
         String response = obtainAccessTokenByRefreshTokenResponse(GRANT_TYPE_REFRESH_TOKEN, refreshToken, clientId,
                 "non-existing");
@@ -327,7 +327,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String response = registerNewScope(scopeName, description, ccExpiresIn, passExpiresIn);
 
         // THEN
-        assertEquals(response, "{\"error\":\"scope name cannot contain space\"}");
+        assertEquals(response, "{\"error\":\"scope name not valid - it may contain aplha-numeric, - and _\"}");
     }
 
     private String extractScopeField(String allScopes, String scopeName, String field) throws JSONException {

@@ -450,7 +450,6 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    // TODO: check
     protected String createBasicAuthorization(String newClientId) {
         String value = newClientId + ":" + clientSecret;
         String encodedValue = new String(Base64.encodeBase64(value.getBytes()));
