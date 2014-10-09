@@ -19,6 +19,7 @@ package com.apifest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -93,7 +94,7 @@ public class BasicTest {
                 out.write(buf);
             }
             out.flush();
-            res = out.toString();
+            res = out.toString("UTF-8");
         } catch (IOException e) {
             log.error("cannot read input", e);
         } finally {

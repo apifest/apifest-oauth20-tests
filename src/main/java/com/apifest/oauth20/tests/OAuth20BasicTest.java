@@ -18,6 +18,7 @@ package com.apifest.oauth20.tests;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
@@ -452,7 +453,7 @@ public class OAuth20BasicTest extends BasicTest {
 
     protected String createBasicAuthorization(String newClientId) {
         String value = newClientId + ":" + clientSecret;
-        String encodedValue = new String(Base64.encodeBase64(value.getBytes()));
+        String encodedValue = new String(Base64.encodeBase64(value.getBytes(Charset.forName("UTF-8"))));
         return "Basic " + encodedValue;
     }
 

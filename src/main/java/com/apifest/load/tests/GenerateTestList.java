@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +51,8 @@ public class GenerateTestList {
         try {
             out = new BufferedOutputStream(new FileOutputStream(file));
             for (Class<?> clazz : classes) {
-                out.write(clazz.getCanonicalName().getBytes());
-                out.write(ls.getBytes());
+                out.write(clazz.getCanonicalName().getBytes(Charset.forName("UTF-8")));
+                out.write(ls.getBytes(Charset.forName("UTF-8")));
             }
             out.flush();
         } catch (IOException e) {
