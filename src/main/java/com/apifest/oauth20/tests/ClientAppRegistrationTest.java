@@ -16,7 +16,8 @@
 
 package com.apifest.oauth20.tests;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -78,6 +79,28 @@ public class ClientAppRegistrationTest extends OAuth20BasicTest {
 
         // THEN
         assertEquals(response, "{\"error\": \"already registered client application\"}");
+    }
+
+    @Test
+    public void update_default_client_app_description() throws Exception {
+        // GIVEN
+        String defaultClientApp = getClientAppById(clientId);
+        String defaultDescr = extractDescription(defaultClientApp);
+        String newDescr = "new description " + defaultDescr;
+
+        // WHEN
+        String response = updateClientApp(clientId, DEFAULT_SCOPE, newDescr, 0, "http://127.0.0.1");
+
+        // THEN
+        assertEquals(response, "{\"status\":\"client application updated\"}");
+        String updated = getClientAppById(clientId);
+        assertTrue(updated.contains(newDescr));
+
+        // cleanup
+        response = updateClientApp(clientId, DEFAULT_SCOPE, DEFAULT_DESCRIPTION, 0, "http://127.0.0.1");
+        assertEquals(response, "{\"status\":\"client application updated\"}");
+        updated = getClientAppById(clientId);
+        assertTrue(updated.contains(DEFAULT_DESCRIPTION));
     }
 
 }

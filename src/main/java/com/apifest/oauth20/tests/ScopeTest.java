@@ -16,6 +16,7 @@
 package com.apifest.oauth20.tests;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -325,6 +326,35 @@ public class ScopeTest extends OAuth20BasicTest {
 
         // THEN
         assertEquals(response, "{\"error\":\"scope name not valid - it may contain aplha-numeric, - and _\"}");
+    }
+
+    @Test
+    public void when_delete_scope_it_is_not_listed_anymore() throws Exception {
+        // GIVEN
+        String tempScope = "new_scope_for_delete";
+        registerNewScope(tempScope, "temporary", 1000, 500);
+        String allScopes = getAllScopes();
+        assertTrue(allScopes.contains(tempScope));
+
+        // WHEN
+        String deleted = deleteScope(tempScope);
+
+        // THEN
+        assertEquals(deleted, "{\"status\":\"scope successfully deleted\"}");
+        allScopes = getAllScopes();
+        assertFalse(allScopes.contains(tempScope));
+    }
+
+    @Test
+    public void when_try_to_delete_non_existing_scope_return_error() throws Exception {
+        // GIVEN
+        String tempScope = "new_scope_for_delete";
+
+        // WHEN
+        String deleted = deleteScope(tempScope);
+
+        // THEN
+        assertEquals(deleted, "{\"status\":\"scope does not exist\"}");
     }
 
     private String extractScopeField(String allScopes, String scopeName, String field) throws JSONException {

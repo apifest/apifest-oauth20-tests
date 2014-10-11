@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -47,6 +48,7 @@ public class OAuth20BasicTest extends BasicTest {
     public static final String RESPONSE_TYPE_CODE = "code";
     public static final String DEFAULT_REDIRECT_URI = "http://127.0.0.1:8080";
     public static final String DEFAULT_SCOPE = "basic";
+    public static final String DEFAULT_DESCRIPTION = "some descr";
     public static final String DEFAULT_CLIENT_NAME = "default_client";
     public static final String DEFAULT_CLIENT_DESCR = "test description";
     int DEFAULT_CC_EXPIRES_IN = 1800;
@@ -284,7 +286,7 @@ public class OAuth20BasicTest extends BasicTest {
         try {
             JSONObject json = new JSONObject();
             json.put("name", clientName);
-            json.put("description", "some descr");
+            json.put("description", DEFAULT_DESCRIPTION);
             json.put("scope", scope);
             json.put("redirect_uri", redirectUri);
 
@@ -308,7 +310,7 @@ public class OAuth20BasicTest extends BasicTest {
         try {
             JSONObject json = new JSONObject();
             json.put("name", clientName);
-            json.put("description", "some descr");
+            json.put("description", DEFAULT_DESCRIPTION);
             json.put("scope", scope);
             json.put("redirect_uri", redirectUri);
             json.put("client_id", clientId);
@@ -359,7 +361,7 @@ public class OAuth20BasicTest extends BasicTest {
             response = readResponse(get);
             log.info(response);
         } catch (IOException e) {
-            log.error("cannot obtain password acces token response", e);
+            log.error("cannot get all scopes", e);
         }
         return response;
     }
@@ -400,6 +402,65 @@ public class OAuth20BasicTest extends BasicTest {
             log.error("cannot update scope", e);
         } catch (JSONException e) {
             log.error("cannot update scope", e);
+        }
+        return response;
+    }
+
+    public String deleteScope(String scope) {
+        DeleteMethod delete = new DeleteMethod(baseOAuth20Uri + SCOPE_ENDPOINT + "/" + scope);
+        String response = null;
+        try {
+            response = readResponse(delete);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot delete scope", e);
+        }
+        return response;
+    }
+
+    public String getAllClientApps() {
+        GetMethod get = new GetMethod(baseOAuth20Uri + APPLICATION_ENDPOINT);
+        String response = null;
+        try {
+            response = readResponse(get);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot get all client apps", e);
+        }
+        return response;
+    }
+
+    public String getClientAppById(String clientId) {
+        GetMethod get = new GetMethod(baseOAuth20Uri + APPLICATION_ENDPOINT + "?client_id=" + clientId);
+        String response = null;
+        try {
+            response = readResponse(get);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot client app", e);
+        }
+        return response;
+    }
+
+    public String updateClientApp(String clientId, String scope, String description, Integer status, String redirectUri) {
+        PutMethod put = new PutMethod(baseOAuth20Uri + APPLICATION_ENDPOINT);
+        String response = null;
+        try {
+            put.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            JSONObject json = new JSONObject();
+            json.put("status", status);
+            json.put("description", description);
+            json.put("redirect_uri", redirectUri);
+            String requestBody = json.toString();
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            put.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            put.setRequestEntity(requestEntity);
+            response = readResponse(put);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot update client app", e);
+        } catch (JSONException e) {
+            log.error("cannot update client app", e);
         }
         return response;
     }
@@ -533,5 +594,16 @@ public class OAuth20BasicTest extends BasicTest {
             // do not log
         }
         return expiresIn;
+    }
+
+    protected String extractDescription(String json) {
+        String clientId = null;
+        try {
+            JSONObject jsonObj = new JSONObject(json);
+            clientId = jsonObj.getString("description");
+        } catch (JSONException e) {
+            // do not log
+        }
+        return clientId;
     }
 }
