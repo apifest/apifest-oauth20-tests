@@ -370,8 +370,8 @@ public class OAuth20BasicTest extends BasicTest {
         URIBuilder builder = null;
         String scope = null;
         try {
-            builder = new URIBuilder(baseOAuth20Uri + APPLICATION_ENDPOINT);
-            builder.setParameter(CLIENT_ID_PARAM, currentClientId);
+            builder = new URIBuilder(baseOAuth20Uri + APPLICATION_ENDPOINT + "/" + currentClientId);
+            //builder.setParameter(CLIENT_ID_PARAM, currentClientId);
             GetMethod get = new GetMethod(builder.build().toString());
             String response = readResponse(get);
             scope = extractAccessTokenScope(response);
@@ -384,11 +384,10 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String updateScope(String scope, String description, Integer ccExpiresIn, Integer passExpiresIn) {
-        PutMethod put = new PutMethod(baseOAuth20Uri + SCOPE_ENDPOINT);
+        PutMethod put = new PutMethod(baseOAuth20Uri + SCOPE_ENDPOINT + "/" + scope);
         String response = null;
         try {
             JSONObject json = new JSONObject();
-            json.put("scope", scope);
             json.put("description", description);
             json.put("cc_expires_in", ccExpiresIn);
             json.put("pass_expires_in", passExpiresIn);
@@ -431,7 +430,7 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String getClientAppById(String clientId) {
-        GetMethod get = new GetMethod(baseOAuth20Uri + APPLICATION_ENDPOINT + "?client_id=" + clientId);
+        GetMethod get = new GetMethod(baseOAuth20Uri + APPLICATION_ENDPOINT + "/" + clientId);
         String response = null;
         try {
             response = readResponse(get);
@@ -443,10 +442,10 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String updateClientApp(String clientId, String scope, String description, Integer status, String redirectUri) {
-        PutMethod put = new PutMethod(baseOAuth20Uri + APPLICATION_ENDPOINT);
+        PutMethod put = new PutMethod(baseOAuth20Uri + APPLICATION_ENDPOINT + "/" + clientId);
         String response = null;
         try {
-            put.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            //put.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
             JSONObject json = new JSONObject();
             json.put("status", status);
             json.put("description", description);
