@@ -71,12 +71,12 @@ public class OAuth20BasicTest extends BasicTest {
 
     public static final String EXPIRES_IN = "expires_in";
 
-    public static final String AUTHORIZE_ENDPOINT = "/oauth20/authorize";
-    public static final String TOKEN_ENDPOINT = "/oauth20/token";
-    public static final String APPLICATION_ENDPOINT = "/oauth20/application";
-    public static final String SCOPE_ENDPOINT = "/oauth20/scope";
-    public static final String TOKEN_REVOKE_ENDPOINT = "/oauth20/token/revoke";
-    public static final String TOKEN_VALIDATE_ENDPOINT = "/oauth20/token/validate";
+    public static final String AUTHORIZE_ENDPOINT = "/oauth20/auth-codes";
+    public static final String TOKEN_ENDPOINT = "/oauth20/tokens";
+    public static final String APPLICATION_ENDPOINT = "/oauth20/applications";
+    public static final String SCOPE_ENDPOINT = "/oauth20/scopes";
+    public static final String TOKEN_REVOKE_ENDPOINT = "/oauth20/tokens/revoke";
+    public static final String TOKEN_VALIDATE_ENDPOINT = "/oauth20/tokens/validate";
 
     Logger log = LoggerFactory.getLogger(OAuth20BasicTest.class);
 
