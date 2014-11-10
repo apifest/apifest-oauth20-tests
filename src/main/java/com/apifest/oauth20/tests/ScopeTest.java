@@ -44,6 +44,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String clientResponse = registerDefaultClient();
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
@@ -68,7 +69,7 @@ public class ScopeTest extends OAuth20BasicTest {
     public void when_get_auth_code_with_null_scope_use_client_default_scope() throws Exception {
         // WHEN
         String code = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI, RESPONSE_TYPE_CODE, null);
-        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String scope = extractAccessTokenScope(accessTokenResponse);
         String clientDefaultScope = getClientDefaultScope(clientId);
 
@@ -80,7 +81,7 @@ public class ScopeTest extends OAuth20BasicTest {
     public void when_get_auth_code_with_valid_scope_return_auth_code() throws Exception {
         // WHEN
         String code = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI, RESPONSE_TYPE_CODE, DEFAULT_SCOPE);
-        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse(GRANT_TYPE_AUTH_CODE, code, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String scope = extractAccessTokenScope(accessTokenResponse);
 
         // THEN
@@ -90,8 +91,8 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_password_access_token_with_non_existing_scope_return_error() throws Exception {
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, "non-existing",
-                true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password,
+                "non-existing", false);
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -100,7 +101,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_password_access_token_with_null_scope_use_client_default_scope() throws Exception {
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, null, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, null, false);
         String scope = extractAccessTokenScope(response);
         String clientDefaultScope = getClientDefaultScope(clientId);
 
@@ -111,7 +112,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_password_access_token_with_not_client_scope_return_error() throws Exception {
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, newScope, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, newScope, false);
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -125,8 +126,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String accessScope = defaultScope.split(" ")[0];
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, accessScope,
-                true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, accessScope, false);
         String scope = extractAccessTokenScope(response);
 
         // THEN
@@ -136,7 +136,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_client_credentials_access_token_with_non_existing_scope_return_error() throws Exception {
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, "non-existing", true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, "non-existing", false);
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -145,7 +145,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_client_credentials_access_token_with_null_scope_use_client_default_scope() throws Exception {
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, null, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, null, false);
         String scope = extractAccessTokenScope(response);
         String clientDefaultScope = getClientDefaultScope(clientId);
 
@@ -156,7 +156,7 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_client_credentials_access_token_with_not_client_scope_return_error() throws Exception {
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, newScope, false);
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -170,7 +170,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String accessScope = defaultScope.split(" ")[0];
 
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, accessScope, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, accessScope, false);
         String scope = extractAccessTokenScope(response);
 
         // THEN
@@ -180,11 +180,11 @@ public class ScopeTest extends OAuth20BasicTest {
     @Test
     public void when_obtain_refresh_access_token_with_non_existing_scope_return_error() throws Exception {
         // WHEN
-        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId,  username, password,
-                DEFAULT_SCOPE, true);
+        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password,
+                DEFAULT_SCOPE, false);
         String refreshToken = extractRefreshToken(accessTokenResponse);
         String response = obtainAccessTokenByRefreshTokenResponse(GRANT_TYPE_REFRESH_TOKEN, refreshToken, clientId,
-                "non-existing");
+                clientSecret, "non-existing");
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -194,11 +194,11 @@ public class ScopeTest extends OAuth20BasicTest {
     public void when_obtain_refresh_access_token_with_null_scope_use_client_default_scope() throws Exception {
         // WHEN
         String clientDefaultScope = getClientDefaultScope(clientId);
-        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId,  username, password,
-                clientDefaultScope, true);
+        String accessTokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password,
+                clientDefaultScope, false);
         String refreshToken = extractRefreshToken(accessTokenResponse);
         String response = obtainAccessTokenByRefreshTokenResponse(GRANT_TYPE_REFRESH_TOKEN, refreshToken, clientId,
-                null);
+                clientSecret, null);
         String scope = extractAccessTokenScope(response);
 
         // THEN
@@ -211,7 +211,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String newScope = registerNewScope("newScope", "new test scope", 1800, 900);
 
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, newScope, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, newScope, false);
 
         // THEN
         assertEquals(response, SCOPE_NOT_VALID);
@@ -225,7 +225,7 @@ public class ScopeTest extends OAuth20BasicTest {
         String accessScope = defaultScope.split(",")[0];
 
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, accessScope, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, accessScope, false);
         String scope = extractAccessTokenScope(response);
 
         // THEN
@@ -239,8 +239,8 @@ public class ScopeTest extends OAuth20BasicTest {
         int minExpiresIn = getMinExpiresIn(clientDefaultScope, "password");
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId,  username, password,
-                clientDefaultScope, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password,
+                clientDefaultScope, false);
 
         // THEN
         String expiresIn = extractAccessTokenExpiresIn(response);
@@ -254,7 +254,7 @@ public class ScopeTest extends OAuth20BasicTest {
         int minExpiresIn = getMinExpiresIn(clientDefaultScope, "client_credentials");
 
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientDefaultScope, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, clientDefaultScope, false);
 
         // THEN
         String expiresIn = extractAccessTokenExpiresIn(response);

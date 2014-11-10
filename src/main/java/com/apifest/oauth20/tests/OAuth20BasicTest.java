@@ -55,6 +55,7 @@ public class OAuth20BasicTest extends BasicTest {
     int DEFAULT_PASS_EXPIRES_IN = 900;
 
     public static final String CLIENT_ID_PARAM = "client_id";
+    public static final String CLIENT_SECRET_PARAM = "client_secret";
     public static final String REDIRECT_URI_PARAM = "redirect_uri";
     public static final String RESPONSE_TYPE_PARAM = "response_type";
     public static final String SCOPE_PARAM = "scope";
@@ -144,21 +145,22 @@ public class OAuth20BasicTest extends BasicTest {
         return authCode;
     }
 
-    public String obtainAccessToken(String authCode, String clientId, String uri) {
-        return obtainAccessToken(GRANT_TYPE_AUTH_CODE, authCode, clientId, uri);
+    public String obtainAccessToken(String authCode, String clientId, String clientSecret, String uri) {
+        return obtainAccessToken(GRANT_TYPE_AUTH_CODE, authCode, clientId, clientSecret, uri);
     }
 
     // POST /oauth20/token
     // grant_type=authorization_code&redirect_uri=dada&client_id=815424409865735&code=XOPeAaFTDNdHEeRCvbA%23IaN%23pggldgbgYnAxQvVYyyG%23zteYTuxSLcz%3DTWWXTLLxPtuviPLTspxkZgeJKsyxXgZPSAEPWYQuIUCccAeQibfmWdxQiWiezNbhGaKbHlSZzZDZAAQ-ujfUouiDZHdVrlVDMFFJJQo%3DAfJemEPRZmZ-wFTNBb-Rwni%3DaRbKRKLSzWkPLAgw
-    public String obtainAccessToken(String grantType, String authCode, String clientId, String uri) {
+    public String obtainAccessToken(String grantType, String authCode, String clientId, String clientSecret, String uri) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String accessToken = null;
         String response = null;
         try {
             NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
-                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri) };
+                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri),
+                    new NameValuePair(CLIENT_ID_PARAM, clientId), new NameValuePair(CLIENT_SECRET_PARAM, clientSecret) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId, clientSecret));
             post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
@@ -171,14 +173,15 @@ public class OAuth20BasicTest extends BasicTest {
         return accessToken;
     }
 
-    public String obtainAccessTokenResponse(String grantType, String authCode, String clientId, String uri) {
+    public String obtainAccessTokenResponse(String grantType, String authCode, String clientId, String clientSecret, String uri) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
             NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
-                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri) };
+                    new NameValuePair(CODE_PARAM, authCode), new NameValuePair(REDIRECT_URI_PARAM, uri),
+                    new NameValuePair(CLIENT_ID_PARAM, clientId), new NameValuePair(CLIENT_SECRET_PARAM, clientSecret)};
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId, clientSecret));
             post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
@@ -188,11 +191,11 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String obtainAccessTokenByRefreshToken(String grantType, String refreshToken, String clientId, String scope) {
+    public String obtainAccessTokenByRefreshToken(String grantType, String refreshToken, String clientId, String clientSecret, String scope) {
         String accessToken = null;
         String response = null;
         try {
-            response = obtainAccessTokenByRefreshTokenResponse(grantType, refreshToken, clientId, scope);
+            response = obtainAccessTokenByRefreshTokenResponse(grantType, refreshToken, clientId, clientSecret, scope);
             log.info(response);
             if (response != null) {
                 JSONObject json = new JSONObject(response);
@@ -208,20 +211,22 @@ public class OAuth20BasicTest extends BasicTest {
     }
 
     public String obtainAccessTokenByRefreshTokenResponse(String grantType, String refreshToken, String clientId,
-            String scope) {
+            String clientSecret, String scope) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
 
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            //post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId, clientSecret));
             if (scope != null) {
                 NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
-                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken), new NameValuePair(SCOPE_PARAM, scope) };
+                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken), new NameValuePair(SCOPE_PARAM, scope),
+                        new NameValuePair(CLIENT_ID_PARAM, clientId), new NameValuePair(CLIENT_SECRET_PARAM, clientSecret) };
                 post.setRequestBody(requestBody);
             } else {
                 NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, grantType),
-                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken) };
+                        new NameValuePair(REFRESH_TOKEN_PARAM, refreshToken), new NameValuePair(CLIENT_ID_PARAM, clientId),
+                        new NameValuePair(CLIENT_SECRET_PARAM, clientSecret) };
                 post.setRequestBody(requestBody);
             }
             response = readResponse(post);
@@ -232,8 +237,8 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String obtainClientCredentialsAccessToken(String currentClientId, String scope, boolean addAuthHeader) {
-        String response = obtainClientCredentialsAccessTokenResponse(currentClientId, scope, addAuthHeader);
+    public String obtainClientCredentialsAccessToken(String currentClientId, String currentClientSecret, String scope, boolean addAuthHeader) {
+        String response = obtainClientCredentialsAccessTokenResponse(currentClientId, currentClientSecret, scope, addAuthHeader);
         log.info(response);
         if (response != null) {
             return extractAccessToken(response);
@@ -241,17 +246,22 @@ public class OAuth20BasicTest extends BasicTest {
         return null;
     }
 
-    public String obtainClientCredentialsAccessTokenResponse(String currentClientId, String scope, boolean addAuthHeader) {
+    public String obtainClientCredentialsAccessTokenResponse(String currentClientId, String currentClientSecret, String scope, boolean addAuthHeader) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
-            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_CLIENT_CREDENTIALS),
-                    new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             if (addAuthHeader) {
-                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_CLIENT_CREDENTIALS),
+                        new NameValuePair(SCOPE_PARAM, scope) };
+                post.setRequestBody(requestBody);
+                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId, currentClientSecret));
+            } else {
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_CLIENT_CREDENTIALS),
+                        new NameValuePair(SCOPE_PARAM, scope), new NameValuePair(CLIENT_ID_PARAM, currentClientId),
+                        new NameValuePair(CLIENT_SECRET_PARAM, currentClientSecret)};
+                post.setRequestBody(requestBody);
             }
-            post.setRequestBody(requestBody);
             response = readResponse(post);
         } catch (IOException e) {
             log.error("cannot obtain client credentials acces token response", e);
@@ -259,19 +269,25 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public String obtainPasswordCredentialsAccessTokenResponse(String currentClientId, String username, String password,
+    public String obtainPasswordCredentialsAccessTokenResponse(String currentClientId, String currentClientSecret, String username, String password,
             String scope, boolean addAuthHeader) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_ENDPOINT);
         String response = null;
         try {
-            NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD),
-                    new NameValuePair("username", username), new NameValuePair("password", password),
-                    new NameValuePair(SCOPE_PARAM, scope) };
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
             if (addAuthHeader) {
-                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
+                post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId, currentClientSecret));
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD),
+                        new NameValuePair("username", username), new NameValuePair("password", password),
+                        new NameValuePair(SCOPE_PARAM, scope) };
+                post.setRequestBody(requestBody);
+            } else {
+                NameValuePair[] requestBody = { new NameValuePair(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD),
+                        new NameValuePair("username", username), new NameValuePair("password", password),
+                        new NameValuePair(SCOPE_PARAM, scope), new NameValuePair(CLIENT_ID_PARAM, currentClientId),
+                        new NameValuePair(CLIENT_SECRET_PARAM, currentClientSecret)};
+                post.setRequestBody(requestBody);
             }
-            post.setRequestBody(requestBody);
             response = readResponse(post);
             log.info(response);
         } catch (IOException e) {
@@ -464,17 +480,40 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    public boolean revokeAccessToken(String token, String currentClientId) {
+    public String updateClientAppStatus(String clientId, Integer status) {
+        PutMethod put = new PutMethod(baseOAuth20Uri + APPLICATION_ENDPOINT + "/" + clientId);
+        String response = null;
+        try {
+            //put.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(clientId));
+            JSONObject json = new JSONObject();
+            json.put("status", status);
+            String requestBody = json.toString();
+            RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            put.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            put.setRequestEntity(requestEntity);
+            response = readResponse(put);
+            log.info(response);
+        } catch (IOException e) {
+            log.error("cannot update client app", e);
+        } catch (JSONException e) {
+            log.error("cannot update client app", e);
+        }
+        return response;
+    }
+
+    public boolean revokeAccessToken(String token, String currentClientId, String currentClientSecret) {
         PostMethod post = new PostMethod(baseOAuth20Uri + TOKEN_REVOKE_ENDPOINT);
         String response = null;
         boolean revoked = false;
         try {
             JSONObject reqJson = new JSONObject();
             reqJson.put(ACCESS_TOKEN_PARAM, token);
+            reqJson.put(CLIENT_ID_PARAM, clientId);
+            reqJson.put(CLIENT_SECRET_PARAM, clientSecret);
             String requestBody = reqJson.toString();
             RequestEntity requestEntity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             post.setRequestHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-            post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId));
+            //post.setRequestHeader(HttpHeaders.AUTHORIZATION, createBasicAuthorization(currentClientId, currentClientSecret));
             post.setRequestEntity(requestEntity);
             response = readResponse(post);
             log.info(response);
@@ -511,8 +550,8 @@ public class OAuth20BasicTest extends BasicTest {
         return response;
     }
 
-    protected String createBasicAuthorization(String newClientId) {
-        String value = newClientId + ":" + clientSecret;
+    protected String createBasicAuthorization(String newClientId, String newClientSecret) {
+        String value = newClientId + ":" + newClientSecret;
         String encodedValue = new String(Base64.encodeBase64(value.getBytes(Charset.forName("UTF-8"))));
         return "Basic " + encodedValue;
     }

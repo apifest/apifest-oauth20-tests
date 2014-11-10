@@ -34,6 +34,7 @@ public class ClientAppRegistrationTest extends OAuth20BasicTest {
         String clientResponse = registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
     @Test
     public void when_register_with_not_existing_scope_return_error() throws Exception {
@@ -89,7 +90,7 @@ public class ClientAppRegistrationTest extends OAuth20BasicTest {
         String newDescr = "new description " + defaultDescr;
 
         // WHEN
-        String response = updateClientApp(clientId, DEFAULT_SCOPE, newDescr, 0, "http://127.0.0.1");
+        String response = updateClientApp(clientId, DEFAULT_SCOPE, newDescr, 1, "http://127.0.0.1");
 
         // THEN
         assertEquals(response, "{\"status\":\"client application updated\"}");
@@ -97,7 +98,7 @@ public class ClientAppRegistrationTest extends OAuth20BasicTest {
         assertTrue(updated.contains(newDescr));
 
         // cleanup
-        response = updateClientApp(clientId, DEFAULT_SCOPE, DEFAULT_DESCRIPTION, 0, "http://127.0.0.1");
+        response = updateClientApp(clientId, DEFAULT_SCOPE, DEFAULT_DESCRIPTION, 1, "http://127.0.0.1");
         assertEquals(response, "{\"status\":\"client application updated\"}");
         updated = getClientAppById(clientId);
         assertTrue(updated.contains(DEFAULT_DESCRIPTION));

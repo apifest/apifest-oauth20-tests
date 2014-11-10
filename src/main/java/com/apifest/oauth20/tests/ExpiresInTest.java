@@ -36,12 +36,13 @@ public class ExpiresInTest extends OAuth20BasicTest {
         String clientResponse = registerDefaultClient();
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
     public void when_generate_password_token_set_DEFAULT_PASS_EXPIRES_IN_expires_in() throws Exception {
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, DEFAULT_SCOPE, false);
 
         // THEN
         JSONObject json = new JSONObject(response);
@@ -51,7 +52,7 @@ public class ExpiresInTest extends OAuth20BasicTest {
     @Test
     public void when_generate_client_credentials_token_set_DEFAULT_CC_EXPIRES_IN_expires_in() throws Exception {
         // WHEN
-        String response = obtainClientCredentialsAccessTokenResponse(clientId, DEFAULT_SCOPE, true);
+        String response = obtainClientCredentialsAccessTokenResponse(clientId, clientSecret, DEFAULT_SCOPE, false);
 
         // THEN
         JSONObject json = new JSONObject(response);
@@ -64,9 +65,9 @@ public class ExpiresInTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String response = obtainAccessTokenByRefreshTokenResponse("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
+        String response = obtainAccessTokenByRefreshTokenResponse("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
 
         // THEN
         JSONObject json = new JSONObject(response);

@@ -36,16 +36,17 @@ public class RevokeTokenTest extends OAuth20BasicTest {
         String clientResponse = registerDefaultClient();
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
     public void when_token_revoked_cannot_use_it() throws Exception {
         // GIVEN
-        String tokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
+        String tokenResponse = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, DEFAULT_SCOPE, false);
         String token = extractAccessToken(tokenResponse);
 
         // WHEN
-        boolean revoked = revokeAccessToken(token, clientId);
+        boolean revoked = revokeAccessToken(token, clientId, clientSecret);
 
         // THEN
         assertTrue(revoked);

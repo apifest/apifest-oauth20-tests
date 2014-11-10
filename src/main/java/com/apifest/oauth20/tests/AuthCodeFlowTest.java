@@ -39,6 +39,7 @@ public class AuthCodeFlowTest extends OAuth20BasicTest {
         String newClientResponse = registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         clientId = extractClientId(newClientResponse);
         clientSecret = extractClientSecret(newClientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test

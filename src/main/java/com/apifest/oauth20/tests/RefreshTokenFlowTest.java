@@ -34,6 +34,7 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
         String clientResponse = registerDefaultClient();
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
@@ -42,9 +43,9 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
+        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
 
         // THEN
         assertNotNull(newAccessToken);
@@ -57,10 +58,10 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
-        String superNewAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
+        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
+        String superNewAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
 
         // THEN
         assertNotNull(newAccessToken);
@@ -72,7 +73,7 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
     @Test
     public void when_refresh_token_invalid_return_error() throws Exception {
         // WHEN
-        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", "refreshToken", clientId, DEFAULT_SCOPE);
+        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", "refreshToken", clientId, clientSecret, DEFAULT_SCOPE);
 
         // THEN
         assertNotNull(accessToken);
@@ -84,27 +85,28 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
         // GIVEN
         String newClientResponse = registerNewClient("NewTestClient", DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         String newClientId = extractClientId(newClientResponse);
+        String newClientSecret = extractClientSecret(newClientResponse);
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, newClientId, DEFAULT_SCOPE);
+        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, newClientId, newClientSecret, DEFAULT_SCOPE);
 
         // THEN
-        assertEquals(accessToken, "{\"error\": \"invalid client_id\"}");
+        assertEquals(accessToken, "{\"error\": \"invalid client_id/client_secret\"}");
     }
 
     @Test
     public void when_refresh_token_ok_return_new_token() throws Exception {
         // GIVEN
-        registerNewClient("NewTestClient", DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
+        //registerNewClient("NewTestClient", DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         String refreshToken = extractRefreshToken(accessTokenResponse);
-        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, DEFAULT_SCOPE);
+        String accessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
 
         // THEN
         assertTrue(!accessToken.contains("{\"error\""));

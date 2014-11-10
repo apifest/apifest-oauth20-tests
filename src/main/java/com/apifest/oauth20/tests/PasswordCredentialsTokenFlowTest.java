@@ -36,12 +36,13 @@ public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
         String clientResponse = registerNewClient(DEFAULT_CLIENT_NAME, DEFAULT_SCOPE, DEFAULT_REDIRECT_URI);
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
     public void when_username_and_password_valid_generate_token() throws Exception {
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, DEFAULT_SCOPE, false);
 
         // THEN
         assertTrue(response.contains("access_token"));
@@ -54,7 +55,7 @@ public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
         String password = "nevermind";
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, username, password, DEFAULT_SCOPE, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse(clientId, clientSecret, username, password, DEFAULT_SCOPE, false);
 
         // THEN
         assertEquals(response, "{\"error\": \"invalid username/password\"}");
@@ -67,11 +68,11 @@ public class PasswordCredentialsTokenFlowTest extends OAuth20BasicTest {
         String password = "nevermind";
 
         // WHEN
-        String response = obtainPasswordCredentialsAccessTokenResponse("invalid_client_id", username, password,
-                DEFAULT_SCOPE, true);
+        String response = obtainPasswordCredentialsAccessTokenResponse("invalid_client_id", clientSecret, username, password,
+                DEFAULT_SCOPE, false);
 
         // THEN
-        assertEquals(response, "{\"error\": \"invalid client_id\"}");
+        assertEquals(response, "{\"error\": \"invalid client_id/client_secret\"}");
     }
 
 }

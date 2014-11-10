@@ -37,6 +37,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String clientResponse = registerDefaultClient();
         clientId = extractClientId(clientResponse);
         clientSecret = extractClientSecret(clientResponse);
+        updateClientAppStatus(clientId, 1);
     }
 
     @Test
@@ -45,7 +46,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode + "_invalid", clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode + "_invalid", clientId, clientSecret, DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
@@ -57,10 +58,10 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId + "_invalid", DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId + "_invalid", clientSecret, DEFAULT_REDIRECT_URI);
 
         // THEN
-        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id/client_secret\"}");
     }
 
     @Test
@@ -71,10 +72,10 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String newClientId = extractClientId(newClientResponse);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, newClientId + "_invalid", DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode, newClientId + "_invalid", clientSecret, DEFAULT_REDIRECT_URI);
 
         // THEN
-        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id\"}");
+        assertEquals(accessTokenResponse, "{\"error\": \"invalid client_id/client_secret\"}");
     }
 
     @Test
@@ -83,7 +84,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI + "_invalid");
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI + "_invalid");
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
@@ -96,7 +97,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, null + "_invalid");
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, clientSecret, null + "_invalid");
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"invalid auth_code\"}");
@@ -108,7 +109,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken("invalid grant_type", authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken("invalid grant_type", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
 
         // THEN
         assertEquals(accessTokenResponse, "{\"error\": \"unsupported_grant_type\"}");
@@ -120,8 +121,8 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
+        obtainAccessToken(authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         // validate access token
 
         // THEN
@@ -134,7 +135,7 @@ public class TokenWithAuthCodeFlowTest extends OAuth20BasicTest {
         String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
 
         // WHEN
-        String accessTokenResponse = obtainAccessToken(authCode, clientId, DEFAULT_REDIRECT_URI);
+        String accessTokenResponse = obtainAccessToken(authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
         // validate access token
 
         // THEN
