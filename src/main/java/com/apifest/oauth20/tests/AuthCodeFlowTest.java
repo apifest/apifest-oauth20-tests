@@ -48,7 +48,7 @@ public class AuthCodeFlowTest extends OAuth20BasicTest {
         String response = obtainAuthCode(clientId + "_invalid", DEFAULT_REDIRECT_URI);
 
         // THEN
-        assertEquals(response, "{\"error\": \"invalid client_id\"}");
+        assertEquals(response, "{\"error\": \"invalid client_id/client_secret\"}");
         log.info("response: {}", response);
     }
 

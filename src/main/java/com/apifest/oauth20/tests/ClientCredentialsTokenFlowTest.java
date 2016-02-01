@@ -54,7 +54,7 @@ public class ClientCredentialsTokenFlowTest extends OAuth20BasicTest {
         String accessToken = obtainClientCredentialsAccessToken("invalid_clientId", clientSecret, DEFAULT_SCOPE, true);
 
         // THEN
-        assertTrue(accessToken.contains("{\"error\": \"invalid client_id\"}"));
+        assertTrue(accessToken.contains("{\"error\": \"invalid client_id/client_secret\"}"));
     }
 
     @Test
