@@ -11,7 +11,3 @@ target/*
 .hg/*
 test-output/*
 
-.idea
-*.iml
-apifest-oauth.properties
-tests_classes.txt
