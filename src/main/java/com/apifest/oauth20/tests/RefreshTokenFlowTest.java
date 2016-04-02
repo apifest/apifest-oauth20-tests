@@ -53,24 +53,6 @@ public class RefreshTokenFlowTest extends OAuth20BasicTest {
     }
 
     @Test
-    public void when_obtain_access_token_with_already_used_refresh_token_return_error() throws Exception {
-        // GIVEN
-        String authCode = obtainAuthCode(clientId, DEFAULT_REDIRECT_URI);
-
-        // WHEN
-        String accessTokenResponse = obtainAccessTokenResponse("authorization_code", authCode, clientId, clientSecret, DEFAULT_REDIRECT_URI);
-        String refreshToken = extractRefreshToken(accessTokenResponse);
-        String newAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
-        String superNewAccessToken = obtainAccessTokenByRefreshToken("refresh_token", refreshToken, clientId, clientSecret, DEFAULT_SCOPE);
-
-        // THEN
-        assertNotNull(newAccessToken);
-        assertTrue(!newAccessToken.contains("{\"error\""));
-        assertNotNull(superNewAccessToken);
-        assertTrue(superNewAccessToken.contains("{\"error\""));
-    }
-
-    @Test
     public void when_refresh_token_invalid_return_error() throws Exception {
         // WHEN
         String accessToken = obtainAccessTokenByRefreshToken("refresh_token", "refreshToken", clientId, clientSecret, DEFAULT_SCOPE);
